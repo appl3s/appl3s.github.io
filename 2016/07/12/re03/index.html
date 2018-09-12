@@ -1,0 +1,299 @@
+
+<!DOCTYPE html>
+<html lang="" class="loading">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hexo</title>
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate" />
+    <meta name="keywords" content="appl3s,"> 
+    
+    <meta name="author" content="John Doe"> 
+    <link rel="alternative" href="atom.xml" title="Hexo" type="application/atom+xml"> 
+    <link rel="icon" href="/img/favicon.png"> 
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+    <link rel="stylesheet" href="/css/diaspora.css">
+</head>
+
+<body class="loading">
+    <div id="loader"></div>
+    <div id="single">
+    <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="icon-home image-icon" href="javascript:;"></a>
+    <div title="播放/暂停" class="icon-play"></div>
+    <h3 class="subtitle">普普通通的逆向</h3>
+    <div class="social">
+        <!--<div class="like-icon">-->
+            <!--<a href="javascript:;" class="likeThis active"><span class="icon-like"></span><span class="count">76</span></a>-->
+        <!--</div>-->
+        <div>
+            <div class="share">
+                <a title="获取二维码" class="icon-scan" href="javascript:;"></a>
+            </div>
+            <div id="qr"></div>
+        </div>
+    </div>
+    <div class="scrollbar"></div>
+</div>
+    <div class="section">
+        <div class="article">
+    <div class='main'>
+        <h1 class="title">普普通通的逆向</h1>
+        <div class="stuff">
+            <span>七月 12, 2016</span>
+            
+  <ul class="post-tags-list"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/tags/reverse/">reverse</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/tags/writeup/">writeup</a></li></ul>
+
+
+        </div>
+        <div class="content markdown">
+            <h1 id="reverse03"><a href="#reverse03" class="headerlink" title="reverse03:"></a>reverse03:</h1><h2 id="author-deadfish"><a href="#author-deadfish" class="headerlink" title="author @deadfish"></a>author @deadfish</h2><p>闲着无聊 做了学校的ctf平台的一题（之前遗留了）<br>先uxp脱壳 然后拖进ida<br><a id="more"></a><br>主要代码如下</p>
+<pre><code>falgDug = 0;
+inUser = 0;                                   // [bp-14h] 开始依次 48, 52, 49, 55, 53, 49, 51, 48, 48, 49, 51, 50
+v_13h = 0;
+v_Fh = 0;
+v22 = 0;
+v23 = 0;
+inPass = 0;
+v13 = 0;
+v14 = 0;
+v15 = 0;
+v16 = 0;
+v17 = 0;
+v18 = 0;
+printf(&quot;输入用户名:&quot;);
+scanf(&quot;%15s&quot;, &amp;inUser);
+printf(&quot;\n&quot;);
+printf(&quot;输入密码:&quot;);
+scanf(&quot;%25s&quot;, &amp;inPass);
+iU = strlen(&amp;inUser);
+for ( i = 0; i &lt; iU; ++i )
+{
+if ( *(&amp;inUser + i) &lt; &#39;0&#39; || *(&amp;inUser + i) &gt; &#39;9&#39; )
+{
+  printf(&quot;用户名必须为数字&quot;);
+  goto LABEL_13;
+}
+}
+v9 = GetTickCount();
+v5 = &amp;loc_401052;
+IsOver = 0x40;
+do
+{                                             // check int
+if ( !IsOver )
+  break;                                    // 检测int3断点防止调试
+getInt3 = *(_BYTE *)v5 == 0xCCu;
+v5 = (char *)v5 + 1;
+--IsOver;
+}
+while ( !getInt3 );
+if ( getInt3 )
+falgDug = 1;
+isInt = (GetTickCount() - v9) / 0x3E8 &gt; 1;    // 判断时间，防止调试
+produceAlph1(falgDug, (int)&amp;inUser, isInt);
+produceAlph2((char *)&amp;v_13h + 3);
+produceAlph3((char *)&amp;v_Fh + 3);
+checkPassword(&amp;inPass);
+LABEL_13:
+system(&quot;pause&quot;);
+return 0;
+</code></pre><hr>
+<p>看到解密的数组列表<br>    alph1=’onhtxdsqvpzcrefjigklfzbapvdqsxzrcefimlku’ <br><br>    alph2=’zscbmdvholblzftuhsxsbchanrcdqjvqfinotcbu’ <br><br>    alph3=’pzywrvdcbqeuafsxgmlitnkopvdqsxtdnapcuwys’<br><br>    这里是在ida里算偏移算出来的 <br><br>    username:041751300132 <br><br>    对应位置为<br><br>    bp-[h]  14  13  12  11  10  0f  0e  0d  0c  0b  0a  09 <br><br>    //      48, 52, 49, 55  53, 49, 51, 48  48, 49, 51, 50 <br> </p>
+<hr>
+<pre><code>注意到
+produceAlph1中有个检测int3断点的程序，防止OD调试
+v9 = GetTickCount();
+v5 = &amp;loc_401052;
+IsOver = 0x40;
+do
+{                                             // check int
+if ( !IsOver )
+  break;                                    // 检测int3断点防止调试
+getInt3 = *(_BYTE *)v5 == 0xCCu;
+v5 = (char *)v5 + 1;
+--IsOver;
+}
+while ( !getInt3 );
+if ( getInt3 )
+falgDug = 1;
+</code></pre><hr>
+<pre><code>###IDA伪指令解析错误:
+怎么写脚本调都不对，问了学长，flag对了，但是伪C代码逻辑有改地方不对
+这个地方：
+f_8 = *((_BYTE *)&amp;aIdaq64_exe[5 * (isDbg + 2 * (unsigned __int8)isFsd) + 2] + *(_BYTE *)pThis);
+反过去汇编才发现ida F5解析错了 应该是：
+*((_BYTE *)&amp;aIdaq64_exe[2 * 5 * (isDbg + 2 * (unsigned __int8)isFsd)]才对吧
+</code></pre><hr>
+<pre><code>.text:00401420 var_4           = dword ptr -4
+.text:00401420
+.text:00401420                 push    ebp
+.text:00401421                 mov     ebp, esp
+.text:00401423                 push    ecx
+.text:00401424                 push    ebx
+.text:00401425                 push    esi
+.text:00401426                 mov     esi, ecx
+.text:00401428                 mov     [ebp+var_4], 0  ; var_4 = 0
+.text:0040142F                 mov     cl, 1
+.text:00401431                 mov     eax, large fs:&#39;0&#39;
+.text:00401437                 mov     eax, [eax+68h]  ; eax += fs:&#39;0&#39;
+.text:0040143A                 mov     [ebp+var_4], eax
+.text:0040143D                 test    byte ptr [ebp+var_4], &#39;p&#39;
+.text:00401441                 mov     eax, 0
+.text:00401446                 movzx   ebx, cl         ; if (var_4 == &#39;p&#39;) ebx = 1
+.text:00401446                                         ; else     ebx = 0
+.text:00401449                 cmovnz  ebx, eax
+.text:0040144C                 call    ds:IsDebuggerPresent
+.text:00401452                 neg     eax             ; if (IsDebuggerPresent) eax = 1
+.text:00401452                                         ; else eax = 0
+.text:00401454                 movzx   ecx, bl         ; 设isFsd = bl
+.text:00401457                 sbb     eax, eax
+.text:00401459                 neg     eax             ; 设isDbg = eax
+.text:0040145B                 lea     eax, [eax+ecx*2] ; eax = isDbg + 2*isFsd
+.text:0040145E                 lea     ecx, [eax+eax*4] ; ecx = 5*(eaxL) = 5*(isDbg + 2*isFsd)
+.text:00401461                 movsx   eax, byte ptr [esi]
+.text:00401464                 movzx   eax, byte ptr [eax+ecx*2+4021A0h] ; 2*ecx = 2*5*(isDbg + 2*isFsd) = 10*(isDbg + 2*isFsd)
+.text:0040146C                 mov     f_8, al         ; 当 isDbg=0 isFsd=1 该值为 10*2-20
+.text:0040146C                                         ; 和ad3_1 = 0
+.text:0040146C                                         ; ad3_2 = 1
+.text:0040146C                                         ; ad3 = 5*(ad3_1 + 2 * ad3_2 + 2) = 20 一致
+.text:00401471                 movsx   eax, byte ptr [esi+1]
+.text:00401475                 movzx   eax, byte ptr [eax+ecx*2+4021A0h]
+.text:0040147D                 mov     f_9, al
+.text:00401482                 movsx   eax, byte ptr [esi+2]
+.text:00401486                 movzx   eax, byte ptr [eax+ecx*2+4021A0h]
+.text:0040148E                 mov     f_10, al
+.text:00401493                 movsx   eax, byte ptr [esi+3]
+.text:00401497                 pop     esi
+.text:00401498                 pop     ebx
+.text:00401499                 movzx   eax, byte ptr [eax+ecx*2+4021A0h]
+.text:004014A1                 mov     f_11, al
+.text:004014A6                 mov     esp, ebp
+.text:004014A8                 pop     ebp
+.text:004014A9                 retn
+.text:004014A9 produceAlph3    endp
+
+(
+neg r 指令的结果是设置Carry Flag, 也就是借位的标志位. 因为neg r的操作语义是0 - r, 零减去任何非零的数,都会产生&quot;借位&quot;的. 当然这里r寄存器中的值也被改掉了,不过没关系, 反正它都要被稍后的指令再改掉的.
+sbb r, r 指令设置r为零或者-1. 因为语义为用一个值去减掉它自身, 结果当然是零啰. 但是,这样做会把carry flag一起给减掉的, 该指令的公式是
+r – r – CF –&gt;  r 
+
+为零(ZF=1) CMOVZ AX, BX
+CMOVZ r32, r/m32 CMOVZ EAX, EB
+)
+</code></pre><hr>
+<h4 id="推广-题目来自-普普通通的逆向"><a href="#推广-题目来自-普普通通的逆向" class="headerlink" title="推广 题目来自:普普通通的逆向"></a>推广 题目来自:<a href="http://219.219.60.244/challenges.php" target="_blank" rel="noopener">普普通通的逆向</a></h4>
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
+                <source type="audio/mpeg" src="">
+            </audio>
+            
+                <ul id="audio-list" style="display:none">
+                    
+                        <li title='0' data-url='http://link.hhtjim.com/163/5146554.mp3'></li>
+                    
+                        <li title='1' data-url='http://link.hhtjim.com/qq/001faIUs4M2zna.mp3'></li>
+                    
+                </ul>
+            
+        </div>
+        
+    <div id='gitalk-container' class="comment link"
+        data-ae='false'
+        data-ci='43aff13f900d41c1c9cc'
+        data-cs='ab6540b0664291f19eca446b6fc76e9b8726ebe4'
+        data-r='chat'
+        data-o='appl3s'
+        data-a='appl3s'
+        data-d='false'
+    >查看评论</div>
+
+
+    </div>
+    
+</div>
+
+
+    </div>
+</div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+<script src="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="/js/plugin.js"></script>
+<script src="/js/diaspora.js"></script>
+<link rel="stylesheet" href="/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/photoswipe/default-skin/default-skin.css">
+<script src="/photoswipe/photoswipe.min.js"></script>
+<script src="/photoswipe/photoswipe-ui-default.min.js"></script>
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+</html>

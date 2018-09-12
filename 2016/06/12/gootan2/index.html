@@ -1,0 +1,171 @@
+
+<!DOCTYPE html>
+<html lang="" class="loading">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hexo</title>
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate" />
+    <meta name="keywords" content="appl3s,"> 
+    
+    <meta name="author" content="John Doe"> 
+    <link rel="alternative" href="atom.xml" title="Hexo" type="application/atom+xml"> 
+    <link rel="icon" href="/img/favicon.png"> 
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+    <link rel="stylesheet" href="/css/diaspora.css">
+</head>
+
+<body class="loading">
+    <div id="loader"></div>
+    <div id="single">
+    <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="icon-home image-icon" href="javascript:;"></a>
+    <div title="播放/暂停" class="icon-play"></div>
+    <h3 class="subtitle">记“古檀杯”大学生网络安全技能大赛决赛(二)</h3>
+    <div class="social">
+        <!--<div class="like-icon">-->
+            <!--<a href="javascript:;" class="likeThis active"><span class="icon-like"></span><span class="count">76</span></a>-->
+        <!--</div>-->
+        <div>
+            <div class="share">
+                <a title="获取二维码" class="icon-scan" href="javascript:;"></a>
+            </div>
+            <div id="qr"></div>
+        </div>
+    </div>
+    <div class="scrollbar"></div>
+</div>
+    <div class="section">
+        <div class="article">
+    <div class='main'>
+        <h1 class="title">记“古檀杯”大学生网络安全技能大赛决赛(二)</h1>
+        <div class="stuff">
+            <span>六月 12, 2016</span>
+            
+  <ul class="post-tags-list"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/tags/ctf/">ctf</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/tags/writeup/">writeup</a></li></ul>
+
+
+        </div>
+        <div class="content markdown">
+            <p>&#160; &#160; &#160; &#160;进数据库很重要的一点是找到配置文件拿到数据库的各类配置信息，这里窝觉得在网站所属的后台里找例如index.php看一下就能很快找到对应的config.php所在的位置，这题也是看了根目录下的index.php找到了对应的config.php的。<br><a id="more"></a><br>&#160; &#160; &#160; &#160;再来讲讲卡了整个队整整一个下午导致窝们只拿了三等奖的那个第二个靶机的入口。打开ip对应的是一个博客，wordpress框架。然后跑去百度wordpress框架的漏洞（比赛时候vpn一直没挂上用不了Google好蛋疼）。发现wordpress框架好几个漏洞都来自它的插件。把网上有的几个插件的php尝试一下，发现<strong>clicktracker.php</strong>存在sql注入的地方。具体的内容可以click这个链接<a href="http://www.securityfocus.com/archive/1/531176" target="_blank" rel="noopener">WordPress AdRotate插件’clicktracker.php’SQL注入漏洞</a>。</p>
+<p>&#160; &#160; &#160; &#160;查看说明不难发现我们需要在 <code>http://[host]/wp-content/plugins/adrotate/library/clicktracker.php?track=</code> 后面添加上需要的sql语句进行注入。要注意的是要把语句写好后转成<strong>base64编码</strong>。这里要提到的这次比赛的又一个感悟是用框架搭的网站，它一些文件的存放路径，数据库的命名也是有迹可循的。当时的窝并不知道这里点。。所以发现这个注入点后就开始用union select开始准备爆库，爆表，爆字段。。这时候我发现一个很奇葩的问题也想吐槽一下，那就是我用在线base64生成的编码和burp上的竟然不一样。。而且burp上的竟然才能用。。不是很明白这个Orz。</p>
+<p>&#160; &#160; &#160; &#160;言归正传，漏洞说明里说了，数据库查询的结果会返回在一个链接上面，然后我发现tmd它只会返回查询的第一项内容。爆库可能不是很可行。这时候，可能是看还没有人拿下第二个靶机，工作人员给了这题的提示，给了数据库名和字段名，甚至连sql语句都给出来了。。我想说我马上就能自己搞出来了。当然到这里我就明白了刚刚提过的框架有自己规定的数据库结构。百度一下你就知道。。<a href="http://blog.csdn.net/ppiao1970hank/article/details/6301812" target="_blank" rel="noopener">WordPress数据库及各表结构</a>到这里，sql注入算是OK了，加上一句<code>-1 UNION SELECT(select user_login from wp_users),1,1,1</code>即可。</p>
+<p>&#160; &#160; &#160; &#160;然后，就是窝整整一下午噩梦的开始。。爆出的用户名是<strong>shu_admin</strong>，密码是<strong>PBlqtRa.i0NMCF89mD0sOthgCjxB2Kx.</strong>当填上发现密码错误是，窝就开始破解这个密码，尝试所有我知道的加密方式，都失败了。。直到比赛快结束时，队友告诉我wordpress框架有自己的加密方式。。。。。。。。心里草泥马在狂奔==</p>
+<p>&#160; &#160; &#160; &#160;wordpress加密是salt加password以后MD5很多很多次，再加个base64这样的。。也就是说，理论上是不可逆的，只能撞库。<a href="http://blog.csdn.net/hk_jh/article/details/27368279" target="_blank" rel="noopener">wordpress用户密码加密原理及其算法分析</a>然后，比完了问了学长才知道，cmd5有wordpress格式的加密功能。。。。。wtf把<code>PBlqtRa.i0NMCF89mD0sOthgCjxB2Kx.</code><br>改成<code>$P$BlqtRa.i0NMCF89mD0sOthgCjxB2Kx.</code>丢到cmd5里就会出来<strong>shu123456</strong>这个密码。。搞的我一怒之下花了100软妹币充了cmd5，下午刚刚到手的奖金就花完了Orz</p>
+<p>&#160; &#160; &#160; &#160;因为没破出密码，导致第二个靶机一分未得并且窝还任性地不看第三个靶机，导致窝们队与800软妹币擦肩而过，我这个名义上的队长要负很大责任。希望以后比赛能吸取这次的教训，在多培养渗透思路的前提下，尽量调整好心态，不在牛角尖上撞死。</p>
+
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
+                <source type="audio/mpeg" src="">
+            </audio>
+            
+                <ul id="audio-list" style="display:none">
+                    
+                        <li title='0' data-url='http://link.hhtjim.com/163/5146554.mp3'></li>
+                    
+                        <li title='1' data-url='http://link.hhtjim.com/qq/001faIUs4M2zna.mp3'></li>
+                    
+                </ul>
+            
+        </div>
+        
+    <div id='gitalk-container' class="comment link"
+        data-ae='false'
+        data-ci='43aff13f900d41c1c9cc'
+        data-cs='ab6540b0664291f19eca446b6fc76e9b8726ebe4'
+        data-r='chat'
+        data-o='appl3s'
+        data-a='appl3s'
+        data-d='false'
+    >查看评论</div>
+
+
+    </div>
+    
+</div>
+
+
+    </div>
+</div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+<script src="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="/js/plugin.js"></script>
+<script src="/js/diaspora.js"></script>
+<link rel="stylesheet" href="/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/photoswipe/default-skin/default-skin.css">
+<script src="/photoswipe/photoswipe.min.js"></script>
+<script src="/photoswipe/photoswipe-ui-default.min.js"></script>
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+</html>

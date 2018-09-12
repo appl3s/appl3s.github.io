@@ -1,0 +1,176 @@
+
+<!DOCTYPE html>
+<html lang="" class="loading">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hexo</title>
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate" />
+    <meta name="keywords" content="appl3s,"> 
+    
+    <meta name="author" content="John Doe"> 
+    <link rel="alternative" href="atom.xml" title="Hexo" type="application/atom+xml"> 
+    <link rel="icon" href="/img/favicon.png"> 
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+    <link rel="stylesheet" href="/css/diaspora.css">
+</head>
+
+<body class="loading">
+    <div id="loader"></div>
+    <div id="single">
+    <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="icon-home image-icon" href="javascript:;"></a>
+    <div title="播放/暂停" class="icon-play"></div>
+    <h3 class="subtitle">如何用bind9搭建自己的dns服务器</h3>
+    <div class="social">
+        <!--<div class="like-icon">-->
+            <!--<a href="javascript:;" class="likeThis active"><span class="icon-like"></span><span class="count">76</span></a>-->
+        <!--</div>-->
+        <div>
+            <div class="share">
+                <a title="获取二维码" class="icon-scan" href="javascript:;"></a>
+            </div>
+            <div id="qr"></div>
+        </div>
+    </div>
+    <div class="scrollbar"></div>
+</div>
+    <div class="section">
+        <div class="article">
+    <div class='main'>
+        <h1 class="title">如何用bind9搭建自己的dns服务器</h1>
+        <div class="stuff">
+            <span>十二月 08, 2016</span>
+            
+  <ul class="post-tags-list"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/tags/bxsteam/">bxsteam</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/tags/干货/">干货</a></li></ul>
+
+
+        </div>
+        <div class="content markdown">
+            <h2 id="0x00-引入"><a href="#0x00-引入" class="headerlink" title="0x00 引入"></a>0x00 引入</h2><blockquote>
+<p>为啥我会突然想到用搭建一个自己的dns服务器呢～因为在一次现场安全教育科普中，我们决定发起一次现场钓鱼…<br><img src="http://www.bxsteam.xyz/wp-content/uploads/2016/12/dns-hijack.png" alt="dns-hijack"><br><a id="more"></a>思路是这样的：内网中有一台服务器来提供<strong>网页服务</strong>，并且在上面开启<strong>dns服务</strong>。在apache配置里面设置虚拟主机，访问ip的话，提供正常的网页服务（报名页），其他的网址请求，一律重定向至<code>wlan.js139.com</code>。在此之前我们下载了移动手机登录端的前端界面，作为钓鱼前端。</p>
+</blockquote>
+<h2 id="0x01-bind9-配置"><a href="#0x01-bind9-配置" class="headerlink" title="0x01 bind9 配置"></a>0x01 bind9 配置</h2><p>传送门-&gt;<a href="http://wiki.ubuntu.org.cn/Bind9%E5%AE%89%E8%A3%85%E8%AE%BE%E7%BD%AE%E6%8C%87%E5%8D%97" target="_blank" rel="noopener">参考wiki</a><br><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ sudo apt-get install bind9</span><br></pre></td></tr></table></figure></p>
+<p>安装完成后，我们就要配置dns劫持了。因为是内网环境，并不会污染外网，所以随便搞～<br>在<code>/etc/bind</code>目录下新建文件<code>named.fakeroot</code>，作为假根域名服务器，所有域名指向同一个ip<br>文件内容<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">@ IN SOA ns.domain.com. hostmaster.domain.com. ( 1 3h 1h 1w 1d )</span><br><span class="line">  IN NS 192.168.2.222</span><br><span class="line">* IN A 192.168.2.222</span><br></pre></td></tr></table></figure></p>
+<p>对特定的域名进行特定的解析<br>新建文件<code>db.kexie</code>，讲 www.kexie.com 指向192.168.2.222这台服务器<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">$TTL	604800</span><br><span class="line">@	IN	SOA	www.kexie.com. root.www.kexie.com. (</span><br><span class="line">			      2		; Serial</span><br><span class="line">			 604800		; Refresh</span><br><span class="line">			  86400		; Retry</span><br><span class="line">			2419200		; Expire</span><br><span class="line">			 604800 )	; Negative Cache TTL</span><br><span class="line">;</span><br><span class="line">@	IN	NS	www.kexie.com.</span><br><span class="line">@	IN	A	192.168.2.219</span><br></pre></td></tr></table></figure></p>
+<p>最后更改named.conf.default-zones，将根域名服务器配置文件替换为假根域名，对于要单独处理的域名单独处理<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br></pre></td><td class="code"><pre><span class="line">// prime the server with knowledge of the root servers</span><br><span class="line">/*zone &quot;.&quot; &#123;</span><br><span class="line">	type hint;</span><br><span class="line">	file &quot;/etc/bind/db.root&quot;;</span><br><span class="line">&#125;;*/</span><br><span class="line"></span><br><span class="line">zone &quot;.&quot; &#123;</span><br><span class="line">	type master;</span><br><span class="line">	file &quot;/etc/bind/named.fakeroot&quot;;</span><br><span class="line">&#125;;</span><br><span class="line">// be authoritative for the localhost forward and reverse zones, and for</span><br><span class="line">// broadcast zones as per RFC 1912</span><br><span class="line"></span><br><span class="line">zone &quot;localhost&quot; &#123;</span><br><span class="line">	type master;</span><br><span class="line">	file &quot;/etc/bind/db.local&quot;;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">zone &quot;127.in-addr.arpa&quot; &#123;</span><br><span class="line">	type master;</span><br><span class="line">	file &quot;/etc/bind/db.127&quot;;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">zone &quot;0.in-addr.arpa&quot; &#123;</span><br><span class="line">	type master;</span><br><span class="line">	file &quot;/etc/bind/db.0&quot;;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">zone &quot;255.in-addr.arpa&quot; &#123;</span><br><span class="line">	type master;</span><br><span class="line">	file &quot;/etc/bind/db.255&quot;;</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line">zone &quot;www.kexie.com&quot; &#123;</span><br><span class="line">	type master;</span><br><span class="line">	file &quot;/etc/bind/db.kexie&quot;;</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure></p>
+<h2 id="0x02-apache虚拟主机配置"><a href="#0x02-apache虚拟主机配置" class="headerlink" title="0x02 apache虚拟主机配置"></a>0x02 apache虚拟主机配置</h2><p>在apache的bin目录下的httpd.conf文件末尾添加代码，这样就实现了通过不同的ip/域名访问同一台服务器而映射不同的网页目录<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line">Listen 80</span><br><span class="line">#将域名kexie.com指向www1目录</span><br><span class="line"><span class="tag">&lt;<span class="name">VirtualHost</span> *<span class="attr">:80</span>&gt;</span></span><br><span class="line">    SeverName kexie.com</span><br><span class="line">		SeverAlias www.kexie.com</span><br><span class="line">    DocumentRoot "/var/www1/html"</span><br><span class="line"><span class="tag">&lt;/<span class="name">VirtualHost</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">Directory</span> "/<span class="attr">var</span>/<span class="attr">www1</span>/<span class="attr">html</span>"&gt;</span></span><br><span class="line">    Options FllowSymLinks</span><br><span class="line">		AllowOverride all</span><br><span class="line">		Require all granted</span><br><span class="line"><span class="tag">&lt;/<span class="name">Directory</span>&gt;</span></span><br><span class="line">#将ip指向www目录</span><br><span class="line"><span class="tag">&lt;<span class="name">VirtualHost</span> *<span class="attr">:80</span>&gt;</span></span><br><span class="line">    SeverName 192.168.2.222</span><br><span class="line">    DocumentRoot "/var/www/html"</span><br><span class="line"><span class="tag">&lt;/<span class="name">VirtualHost</span>&gt;</span></span><br><span class="line"></span><br><span class="line"><span class="tag">&lt;<span class="name">Directory</span> "/<span class="attr">var</span>/<span class="attr">www</span>/<span class="attr">html</span>"&gt;</span></span><br><span class="line">    Options FllowSymLinks</span><br><span class="line">		AllowOverride all</span><br><span class="line">		Require all granted</span><br><span class="line"><span class="tag">&lt;/<span class="name">Directory</span>&gt;</span></span><br></pre></td></tr></table></figure></p>
+<h2 id="0x03-钓鱼php编写"><a href="#0x03-钓鱼php编写" class="headerlink" title="0x03 钓鱼php编写"></a>0x03 钓鱼php编写</h2><p>其他域名会指向这个网页，所以我们要将url一并伪造。<br><figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> </span><br><span class="line"><span class="keyword">if</span>(!<span class="keyword">isset</span>($_SERVER[<span class="string">'HTTP_REFERER'</span>])||$_SERVER[<span class="string">'HTTP_REFERER'</span>]!=<span class="string">"http://wlan.jsyd139.com/?token=a5d77894bdcabff5644495423&amp;id=156161616515618498&amp;bxs"</span>)</span><br><span class="line">&#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">"&lt;script&gt;window.location.href='http://wlan.jsyd139.com/?token=a5d77894bdcabff5644495423&amp;id=156161616515618498&amp;bxs'&lt;/script&gt;"</span>;</span><br><span class="line">    <span class="keyword">die</span>();</span><br><span class="line">&#125;</span><br><span class="line"><span class="meta">?&gt;</span></span><br><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">省略...</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure></p>
+<h2 id="0x04-网关配置"><a href="#0x04-网关配置" class="headerlink" title="0x04 网关配置"></a>0x04 网关配置</h2><p>在网关中配置首选dns，填写dns服务器的ip，补充一点，服务器应该配置<strong>静态ip</strong></p>
+<h2 id="0x05-小结"><a href="#0x05-小结" class="headerlink" title="0x05 小结"></a>0x05 小结</h2><p>dns劫持危险切不容易被察觉，所以连入公共网络的时候，一定要谨慎小心，如果可以的话，尽量配置公共dns，常见的有8.8.8.8、114.114.114.114等<br>擦亮眼睛啦～</p>
+
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
+                <source type="audio/mpeg" src="">
+            </audio>
+            
+                <ul id="audio-list" style="display:none">
+                    
+                        <li title='0' data-url='http://link.hhtjim.com/163/5146554.mp3'></li>
+                    
+                        <li title='1' data-url='http://link.hhtjim.com/qq/001faIUs4M2zna.mp3'></li>
+                    
+                </ul>
+            
+        </div>
+        
+    <div id='gitalk-container' class="comment link"
+        data-ae='false'
+        data-ci='43aff13f900d41c1c9cc'
+        data-cs='ab6540b0664291f19eca446b6fc76e9b8726ebe4'
+        data-r='chat'
+        data-o='appl3s'
+        data-a='appl3s'
+        data-d='false'
+    >查看评论</div>
+
+
+    </div>
+    
+</div>
+
+
+    </div>
+</div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+<script src="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="/js/plugin.js"></script>
+<script src="/js/diaspora.js"></script>
+<link rel="stylesheet" href="/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/photoswipe/default-skin/default-skin.css">
+<script src="/photoswipe/photoswipe.min.js"></script>
+<script src="/photoswipe/photoswipe-ui-default.min.js"></script>
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+</html>

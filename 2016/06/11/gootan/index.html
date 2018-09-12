@@ -1,0 +1,170 @@
+
+<!DOCTYPE html>
+<html lang="" class="loading">
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hexo</title>
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="google" content="notranslate" />
+    <meta name="keywords" content="appl3s,"> 
+    
+    <meta name="author" content="John Doe"> 
+    <link rel="alternative" href="atom.xml" title="Hexo" type="application/atom+xml"> 
+    <link rel="icon" href="/img/favicon.png"> 
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.css">
+    <link rel="stylesheet" href="/css/diaspora.css">
+</head>
+
+<body class="loading">
+    <div id="loader"></div>
+    <div id="single">
+    <div id="top" style="display: block;">
+    <div class="bar" style="width: 0;"></div>
+    <a class="icon-home image-icon" href="javascript:;"></a>
+    <div title="播放/暂停" class="icon-play"></div>
+    <h3 class="subtitle">记“古檀杯”大学生网络安全技能大赛决赛</h3>
+    <div class="social">
+        <!--<div class="like-icon">-->
+            <!--<a href="javascript:;" class="likeThis active"><span class="icon-like"></span><span class="count">76</span></a>-->
+        <!--</div>-->
+        <div>
+            <div class="share">
+                <a title="获取二维码" class="icon-scan" href="javascript:;"></a>
+            </div>
+            <div id="qr"></div>
+        </div>
+    </div>
+    <div class="scrollbar"></div>
+</div>
+    <div class="section">
+        <div class="article">
+    <div class='main'>
+        <h1 class="title">记“古檀杯”大学生网络安全技能大赛决赛</h1>
+        <div class="stuff">
+            <span>六月 11, 2016</span>
+            
+  <ul class="post-tags-list"><li class="post-tags-list-item"><a class="post-tags-list-link" href="/tags/ctf/">ctf</a></li><li class="post-tags-list-item"><a class="post-tags-list-link" href="/tags/writeup/">writeup</a></li></ul>
+
+
+        </div>
+        <div class="content markdown">
+            <h1 id="蒟蒻的第一次正式出征"><a href="#蒟蒻的第一次正式出征" class="headerlink" title="蒟蒻的第一次正式出征"></a>蒟蒻的第一次正式出征</h1><p>今天我们蒟蒻小分队参加了<a href="http://is.cumt.edu.cn/article/articleread?id=258&amp;class=1" target="_blank" rel="noopener">学院举办的CTF比赛</a>，整场比赛都是<strong>渗透</strong><br>web这方面有时候是真心力不从心啊，还是自己学的太少。比赛只拿到三等奖有些不开心啊，距离二等奖就差一个flag~不多说，还是把自己会的写下来吧<br><a id="more"></a><br>整场比赛我们拿到了3个flag，都来自第一个靶机</p>
+<h2 id="0x00"><a href="#0x00" class="headerlink" title="0x00"></a>0x00</h2><p>直接访问域名得到信息：dedecms 5.1 框架，在这个时候，作为刚入门大渣，只能<a href="http://www.baidui.com" target="_blank" rel="noopener">百度一下</a>，然后就会发现这个<a href="http://www.jb51.net/hack/140448.html" target="_blank" rel="noopener">dedecms全版本通杀sql注入漏洞</a>，还是我文哥厉害，瞬间get到管理员账号密码<br><strong>admin</strong><br><strong>c877e9782eca0705</strong><br>密码是16位MD5，到pMD5或者cMD5解密得到<br><strong>5678tyui</strong><br>二话不说登录管理员账户，直接浏览网站根目录，发现一个文本文件，第一个flag就在里面</p>
+<h2 id="0x01"><a href="#0x01" class="headerlink" title="0x01"></a>0x01</h2><p>根据提示，flag在管理员桌面和数据库中，但是浏览网站的数据库并没有发现flag，那么有可能在其他数据库中了。当机立断浏览数据库配置文件，上传大马拿到shell（毕竟太渣了，这里浪费了很多时间），然后提权，发现另外一个数据库叫做flagstring<br>进入拿到第二个flag</p>
+<h2 id="0x02"><a href="#0x02" class="headerlink" title="0x02"></a>0x02</h2><p>第三个flag在管理员桌面上，第一个想到的就是远程桌面登录，因为拿到了shell并且添加了管理员账户，所以直接执行命令<code>net start TermService</code>,但是却提示失败，无奈开始扫描端口，发现<a href="http://baike.baidu.com/link?url=Ci6BEBjF-gxf3yzb64gd52NQYR4DTbcM6TVMThzGTs8HUdYh9fpvh3BpFnwfjd7r2TH_UmZ2dzEppy5uc_ye1K" target="_blank" rel="noopener">端口445</a>开放<br>哈哈，这可找到了，执行在服务器shell执行<code>net share xixi=C:/</code>，在本地shell执行<code>net view \\[host]</code>,再执行<code>net net use z: \\[host]\xixi &quot;密码&quot; /user:&quot;帐号&quot;</code>将共享的xixi映射为自己的z盘，cd 到管理员桌面将flag copy出来</p>
+<p>其实真的不是很难，还是自己太弱了╮(╯▽╰)╭，继续努力吧</p>
+
+            <!--[if lt IE 9]><script>document.createElement('audio');</script><![endif]-->
+            <audio id="audio" loop="1" preload="auto" controls="controls" data-autoplay="false">
+                <source type="audio/mpeg" src="">
+            </audio>
+            
+                <ul id="audio-list" style="display:none">
+                    
+                        <li title='0' data-url='http://link.hhtjim.com/163/5146554.mp3'></li>
+                    
+                        <li title='1' data-url='http://link.hhtjim.com/qq/001faIUs4M2zna.mp3'></li>
+                    
+                </ul>
+            
+        </div>
+        
+    <div id='gitalk-container' class="comment link"
+        data-ae='false'
+        data-ci='43aff13f900d41c1c9cc'
+        data-cs='ab6540b0664291f19eca446b6fc76e9b8726ebe4'
+        data-r='chat'
+        data-o='appl3s'
+        data-a='appl3s'
+        data-d='false'
+    >查看评论</div>
+
+
+    </div>
+    
+</div>
+
+
+    </div>
+</div>
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+        tex2jax: {
+            inlineMath: [ ["$","$"], ["\\(","\\)"] ],
+            skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'],
+            processEscapes: true
+        }
+    });
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax();
+        for (var i = 0; i < all.length; ++i)
+            all[i].SourceElement().parentNode.className += ' has-jax';
+    });
+</script>
+<script src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+</body>
+<script src="//cdn.jsdelivr.net/npm/gitalk@1/dist/gitalk.min.js"></script>
+<script src="//lib.baomitu.com/jquery/1.8.3/jquery.min.js"></script>
+<script src="/js/plugin.js"></script>
+<script src="/js/diaspora.js"></script>
+<link rel="stylesheet" href="/photoswipe/photoswipe.css">
+<link rel="stylesheet" href="/photoswipe/default-skin/default-skin.css">
+<script src="/photoswipe/photoswipe.min.js"></script>
+<script src="/photoswipe/photoswipe-ui-default.min.js"></script>
+
+<!-- Root element of PhotoSwipe. Must have class pswp. -->
+<div class="pswp" tabindex="-1" role="dialog" aria-hidden="true">
+    <!-- Background of PhotoSwipe. 
+         It's a separate element as animating opacity is faster than rgba(). -->
+    <div class="pswp__bg"></div>
+    <!-- Slides wrapper with overflow:hidden. -->
+    <div class="pswp__scroll-wrap">
+        <!-- Container that holds slides. 
+            PhotoSwipe keeps only 3 of them in the DOM to save memory.
+            Don't modify these 3 pswp__item elements, data is added later on. -->
+        <div class="pswp__container">
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+            <div class="pswp__item"></div>
+        </div>
+        <!-- Default (PhotoSwipeUI_Default) interface on top of sliding area. Can be changed. -->
+        <div class="pswp__ui pswp__ui--hidden">
+            <div class="pswp__top-bar">
+                <!--  Controls are self-explanatory. Order can be changed. -->
+                <div class="pswp__counter"></div>
+                <button class="pswp__button pswp__button--close" title="Close (Esc)"></button>
+                <button class="pswp__button pswp__button--share" title="Share"></button>
+                <button class="pswp__button pswp__button--fs" title="Toggle fullscreen"></button>
+                <button class="pswp__button pswp__button--zoom" title="Zoom in/out"></button>
+                <!-- Preloader demo http://codepen.io/dimsemenov/pen/yyBWoR -->
+                <!-- element will get class pswp__preloader--active when preloader is running -->
+                <div class="pswp__preloader">
+                    <div class="pswp__preloader__icn">
+                      <div class="pswp__preloader__cut">
+                        <div class="pswp__preloader__donut"></div>
+                      </div>
+                    </div>
+                </div>
+            </div>
+            <div class="pswp__share-modal pswp__share-modal--hidden pswp__single-tap">
+                <div class="pswp__share-tooltip"></div> 
+            </div>
+            <button class="pswp__button pswp__button--arrow--left" title="Previous (arrow left)">
+            </button>
+            <button class="pswp__button pswp__button--arrow--right" title="Next (arrow right)">
+            </button>
+            <div class="pswp__caption">
+                <div class="pswp__caption__center"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+</html>
