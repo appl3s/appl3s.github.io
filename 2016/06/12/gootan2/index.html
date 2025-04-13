@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Appl3s">
+
+
+
+
+
+<title>记“古檀杯”大学生网络安全技能大赛决赛(二) | Appl3s的博客</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Appl3s&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Appl3s&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">记“古檀杯”大学生网络安全技能大赛决赛(二)</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Appl3s</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">June 12, 2016&nbsp;&nbsp;13:23:30</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <p>&#160; &#160; &#160; &#160;进数据库很重要的一点是找到配置文件拿到数据库的各类配置信息，这里窝觉得在网站所属的后台里找例如index.php看一下就能很快找到对应的config.php所在的位置，这题也是看了根目录下的index.php找到了对应的config.php的。</p>
+<span id="more"></span>
+<p>&#160; &#160; &#160; &#160;再来讲讲卡了整个队整整一个下午导致窝们只拿了三等奖的那个第二个靶机的入口。打开ip对应的是一个博客，wordpress框架。然后跑去百度wordpress框架的漏洞（比赛时候vpn一直没挂上用不了Google好蛋疼）。发现wordpress框架好几个漏洞都来自它的插件。把网上有的几个插件的php尝试一下，发现<strong>clicktracker.php</strong>存在sql注入的地方。具体的内容可以click这个链接<a target="_blank" rel="noopener" href="http://www.securityfocus.com/archive/1/531176">WordPress AdRotate插件’clicktracker.php’SQL注入漏洞</a>。</p>
+<p>&#160; &#160; &#160; &#160;查看说明不难发现我们需要在 <code>http://[host]/wp-content/plugins/adrotate/library/clicktracker.php?track=</code> 后面添加上需要的sql语句进行注入。要注意的是要把语句写好后转成<strong>base64编码</strong>。这里要提到的这次比赛的又一个感悟是用框架搭的网站，它一些文件的存放路径，数据库的命名也是有迹可循的。当时的窝并不知道这里点。。所以发现这个注入点后就开始用union select开始准备爆库，爆表，爆字段。。这时候我发现一个很奇葩的问题也想吐槽一下，那就是我用在线base64生成的编码和burp上的竟然不一样。。而且burp上的竟然才能用。。不是很明白这个Orz。</p>
+<p>&#160; &#160; &#160; &#160;言归正传，漏洞说明里说了，数据库查询的结果会返回在一个链接上面，然后我发现tmd它只会返回查询的第一项内容。爆库可能不是很可行。这时候，可能是看还没有人拿下第二个靶机，工作人员给了这题的提示，给了数据库名和字段名，甚至连sql语句都给出来了。。我想说我马上就能自己搞出来了。当然到这里我就明白了刚刚提过的框架有自己规定的数据库结构。百度一下你就知道。。<a target="_blank" rel="noopener" href="http://blog.csdn.net/ppiao1970hank/article/details/6301812">WordPress数据库及各表结构</a>到这里，sql注入算是OK了，加上一句<code>-1 UNION SELECT(select user_login from wp_users),1,1,1 </code>即可。<br>	<br>&#160; &#160; &#160; &#160;然后，就是窝整整一下午噩梦的开始。。爆出的用户名是<strong>shu_admin</strong>，密码是**PBlqtRa.i0NMCF89mD0sOthgCjxB2Kx.**当填上发现密码错误是，窝就开始破解这个密码，尝试所有我知道的加密方式，都失败了。。直到比赛快结束时，队友告诉我wordpress框架有自己的加密方式。。。。。。。。心里草泥马在狂奔&#x3D;&#x3D;</p>
+<p>&#160; &#160; &#160; &#160;wordpress加密是salt加password以后MD5很多很多次，再加个base64这样的。。也就是说，理论上是不可逆的，只能撞库。<a target="_blank" rel="noopener" href="http://blog.csdn.net/hk_jh/article/details/27368279">wordpress用户密码加密原理及其算法分析</a>然后，比完了问了学长才知道，cmd5有wordpress格式的加密功能。。。。。wtf把<code>PBlqtRa.i0NMCF89mD0sOthgCjxB2Kx.</code><br>改成<code>$P$BlqtRa.i0NMCF89mD0sOthgCjxB2Kx.</code>丢到cmd5里就会出来<strong>shu123456</strong>这个密码。。搞的我一怒之下花了100软妹币充了cmd5，下午刚刚到手的奖金就花完了Orz</p>
+<p>&#160; &#160; &#160; &#160;因为没破出密码，导致第二个靶机一分未得并且窝还任性地不看第三个靶机，导致窝们队与800软妹币擦肩而过，我这个名义上的队长要负很大责任。希望以后比赛能吸取这次的教训，在多培养渗透思路的前提下，尽量调整好心态，不在牛角尖上撞死。</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Appl3s</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://example.com/2016/06/12/gootan2/">http://example.com/2016/06/12/gootan2/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2025 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>Do you believe in <strong>DESTINY</strong>?</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/writeup/"># writeup</a>
+                    
+                        <a href="/tags/ctf/"># ctf</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2016/07/12/re03/">普普通通的逆向</a>
+            
+            
+            <a class="next" rel="next" href="/2016/06/11/gootan/">记“古檀杯”大学生网络安全技能大赛决赛</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Appl3s | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

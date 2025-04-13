@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Appl3s">
+
+
+
+
+
+<title>深入理解计算机系统学习记录 | Appl3s的博客</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+            <!-- MathJax配置，可通过单美元符号书写行内公式等 -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Config({
+    "HTML-CSS": {
+        preferredFont: "TeX",
+        availableFonts: ["STIX","TeX"],
+        linebreaks: { automatic:true },
+        EqnChunk: (MathJax.Hub.Browser.isMobile ? 10 : 50)
+    },
+    tex2jax: {
+        inlineMath: [ ["$", "$"], ["\\(","\\)"] ],
+        processEscapes: true,
+        ignoreClass: "tex2jax_ignore|dno",
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    },
+    TeX: {
+        equationNumbers: { autoNumber: "AMS" },
+        noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } },
+        Macros: { href: "{}" }
+    },
+    messageStyle: "none"
+    });
+</script>
+<!-- 给MathJax元素添加has-jax class -->
+<script type="text/x-mathjax-config">
+    MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for(i=0; i < all.length; i += 1) {
+            all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+    });
+</script>
+<!-- 通过连接CDN加载MathJax的js代码 -->
+<script type="text/javascript" async
+        src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+
+        
+    
+
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Appl3s&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Appl3s&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">深入理解计算机系统学习记录</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Appl3s</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">June 7, 2017&nbsp;&nbsp;23:05:09</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <blockquote>
+<p>新坑，准备开博记录学习历程，进而鞭策自己~</p>
+</blockquote>
+<span id="more"></span>
+<h2 id="0x00-第一章-计算机系统漫游"><a href="#0x00-第一章-计算机系统漫游" class="headerlink" title="0x00 第一章 计算机系统漫游"></a>0x00 第一章 计算机系统漫游</h2><h3 id="编译系统"><a href="#编译系统" class="headerlink" title="编译系统"></a>编译系统</h3><p>hello.c</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;hello,world\n&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<blockquote>
+<p><strong>hello.c</strong>-&gt;预处理器（cpp）-&gt;<strong>hello.i</strong>-&gt;编译器（ccl）-&gt;<strong>hello.s</strong>-&gt;汇编器（as）-&gt;<strong>hello.o、printf.o</strong>-&gt;链接器（ld）-&gt;<strong>hello</strong></p>
+</blockquote>
+<p>编译分为4个阶段：预处理，编译，汇编，链接<br>经过ccl的翻译，hello.i被翻译成hello.s<br>hello.s</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">main:</span><br><span class="line">    subq $8,%rsp</span><br><span class="line">    movl $.LC0,%edi</span><br><span class="line">    call puts</span><br><span class="line">    movl $0,%eax</span><br><span class="line">    addq $8,%rsp</span><br><span class="line">    ret</span><br></pre></td></tr></table></figure>
+<h3 id="虚拟内存"><a href="#虚拟内存" class="headerlink" title="虚拟内存"></a>虚拟内存</h3><p>虚拟是一个抽象概念，它为每一个进程提供了一个假象，每个进程都在独占地使用主存，每个进程看到的内存都是一致的</p>
+<table>
+<thead>
+<tr>
+<th align="center">内核虚拟内存</th>
+<th align="left">用户代码不可见的内存</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">用户栈（运行时候创建）</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="center">共享库的内存（映射区域）</td>
+<td align="left">printf函数</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="center">运行时堆（在运行时由malloc创建的）</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="center">读&#x2F;写数据</td>
+<td align="left">从hello可执行文件加载进来的</td>
+</tr>
+<tr>
+<td align="center">只读的代码和数据</td>
+<td align="left"></td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="left"></td>
+</tr>
+</tbody></table>
+<h3 id="Amdahl定律"><a href="#Amdahl定律" class="headerlink" title="Amdahl定律"></a>Amdahl定律</h3><p>当我们对系统的某个部分加速的时候，对其系统整体性能的影响取决于该部分的重要性和加速程度。<br>系统执行某应用程序所需要的时间是$T_{old}$,假设系统某部分所需要的执行时间是与该时间的比为$\alpha$,该部分性能提升比为$k$<br>即该部分初始化所需要的时间是$\alpha T_{old}$,现在所需的时间是$(\alpha T_{old})&#x2F;k$<br>所以总得执行时间是</p>
+<p>$$<br>T_{new}&#x3D;(1-\alpha)T_{old}+(\alpha T_{old})&#x2F;k&#x3D;T_{old}[(1-\alpha)+\alpha &#x2F;k]<br>$$</p>
+<p>可以计算加速比$S&#x3D;T_{old}&#x2F;T_{new}$为</p>
+<p>$$<br>S&#x3D;\frac{1}{(1-\alpha)+\alpha &#x2F;k}<br>$$</p>
+<p>Amdahl定律一个有趣的特殊情况是考虑$k$趋向$\infty$时的效果，意味着，我们可以取系统的某一部分将其加速到一个点，在这个点上，这部分花费的时间可以忽略不计</p>
+<p>$$<br>S&#x3D;\frac{1}{1-\alpha}<br>$$</p>
+<h2 id="0x01-第二章-信息的表示和处理"><a href="#0x01-第二章-信息的表示和处理" class="headerlink" title="0x01 第二章 信息的表示和处理"></a>0x01 第二章 信息的表示和处理</h2><h3 id="信息存储"><a href="#信息存储" class="headerlink" title="信息存储"></a>信息存储</h3><ul>
+<li>大多数计算机使用8位的块（byte）作为最小的可寻址的内存单位</li>
+</ul>
+<h3 id="字数据大小"><a href="#字数据大小" class="headerlink" title="字数据大小"></a>字数据大小</h3><ul>
+<li><p>每台计算机都以一个字长，指明指针数据的标称大小。对于一个字长为$w$的机器而言，虚拟地址的范围为$0$~$2^w-1$,程序最多访问$2^w$个字节</p>
+</li>
+<li><p>32位字长限制虚拟地址空间为4千兆字节（4GB）刚刚超过$5\times 10^9$，扩展到64位字长是的虚拟地址空间为16EB，大约是$1.84\times 10^{19}$字节</p>
+</li>
+<li><p>基本C数据类型的典型大小（以字节为单位）</p>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th align="center">有符号</th>
+<th align="center">无符号</th>
+<th align="center">32位</th>
+<th align="center">64位</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">[signed] char</td>
+<td align="center">unsigned char</td>
+<td align="center">1</td>
+<td align="center">1</td>
+</tr>
+<tr>
+<td align="center">short</td>
+<td align="center">unsigned short</td>
+<td align="center">2</td>
+<td align="center">2</td>
+</tr>
+<tr>
+<td align="center">int</td>
+<td align="center">unsigned</td>
+<td align="center">4</td>
+<td align="center">4</td>
+</tr>
+<tr>
+<td align="center">long</td>
+<td align="center">unsigned long</td>
+<td align="center">4</td>
+<td align="center">8</td>
+</tr>
+<tr>
+<td align="center">int32_t</td>
+<td align="center">uint32_t</td>
+<td align="center">4</td>
+<td align="center">4</td>
+</tr>
+<tr>
+<td align="center">int64_t</td>
+<td align="center">uint64_t</td>
+<td align="center">8</td>
+<td align="center">8</td>
+</tr>
+<tr>
+<td align="center">char *</td>
+<td align="center"></td>
+<td align="center">4</td>
+<td align="center">8</td>
+</tr>
+<tr>
+<td align="center">float</td>
+<td align="center"></td>
+<td align="center">4</td>
+<td align="center">4</td>
+</tr>
+<tr>
+<td align="center">double</td>
+<td align="center"></td>
+<td align="center">8</td>
+<td align="center">8</td>
+</tr>
+</tbody></table>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="keyword">typedef</span> <span class="type">unsigned</span> <span class="type">char</span> *byte_pointer;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">show_bytes</span><span class="params">(byte_pointer start,<span class="type">size_t</span> len)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">size_t</span> i;</span><br><span class="line">    <span class="keyword">for</span> (i=<span class="number">0</span> ; i &lt; len; i++ )</span><br><span class="line">        <span class="built_in">printf</span>(<span class="string">&quot;%.2x&quot;</span>,start[i]);<span class="comment">//两个数字的16进制格式输出</span></span><br><span class="line">    <span class="built_in">printf</span>(<span class="string">&quot;\n&quot;</span>);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">show_int</span><span class="params">(<span class="type">int</span> x)</span></span><br><span class="line">&#123;</span><br><span class="line">    show_bytes((byte_pointer) &amp;x,<span class="keyword">sizeof</span>(<span class="type">int</span>));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">show_float</span><span class="params">(<span class="type">float</span> x)</span></span><br><span class="line">&#123;</span><br><span class="line">    show_bytes((byte_pointer) &amp;x,<span class="keyword">sizeof</span>(<span class="type">float</span>));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">show_pointer</span><span class="params">(<span class="type">void</span> *x)</span></span><br><span class="line">&#123;</span><br><span class="line">    show_bytes((byte_pointer) &amp;x,<span class="keyword">sizeof</span>(<span class="type">void</span> *));</span><br><span class="line">&#125;</span><br><span class="line"><span class="comment">//打印程序对象的字节表示</span></span><br></pre></td></tr></table></figure>
+
+<p><code>getpeername</code>的安全漏洞</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">/*</span></span><br><span class="line"><span class="comment"> * Illustation of code vulnerability similar to that found in</span></span><br><span class="line"><span class="comment"> * FreeBSD&#x27;s implementation of getpeername()</span></span><br><span class="line"><span class="comment"> */</span></span><br><span class="line"></span><br><span class="line"><span class="comment">/* Declaration of library function memcpy */</span></span><br><span class="line"><span class="type">void</span> *<span class="title function_">memcpy</span><span class="params">(<span class="type">void</span> * dest ,<span class="type">void</span> *src , <span class="type">size_t</span> n)</span>;</span><br><span class="line"></span><br><span class="line"><span class="comment">/* Kernel memory region holding user-accessible data*/</span></span><br><span class="line"><span class="meta">#<span class="keyword">define</span> KSIZE 1024;</span></span><br><span class="line"><span class="type">char</span> kbuf[KSIZE];</span><br><span class="line"></span><br><span class="line"><span class="comment">/*Copy at most maxlen bytes from kernel region to user buffer */</span></span><br><span class="line"><span class="type">int</span> <span class="title function_">copy_from_kernel</span><span class="params">(<span class="type">void</span> *user_dest, <span class="type">int</span> maxlen)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="comment">/* Byte count len is minimum of buffer size and maxlen */</span></span><br><span class="line">    <span class="type">int</span> len= KSIZE&lt; maxlen ? KSIZE : maxlen;</span><br><span class="line">    <span class="built_in">memcpy</span>(user_dest , kbuf , len);</span><br><span class="line">    <span class="keyword">return</span> len;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><code>size_t</code> 在32位机器中是<code>unsigned int</code>，64位机器中是<code>unsigned long</code>，传入参数<code>int</code>数据类型不匹配导致能够访问到大于可见区域的内核内存</p>
+<h2 id="0x02-第三章-程序的机器级表示"><a href="#0x02-第三章-程序的机器级表示" class="headerlink" title="0x02 第三章 程序的机器级表示"></a>0x02 第三章 程序的机器级表示</h2><h3 id="程序编码"><a href="#程序编码" class="headerlink" title="程序编码"></a>程序编码</h3><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">linux&gt; gcc -Og -o p1.c p2.c</span><br></pre></td></tr></table></figure>
+<h3 id="代码实例"><a href="#代码实例" class="headerlink" title="代码实例"></a>代码实例</h3><figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;stdio.h&gt;</span></span></span><br><span class="line"></span><br><span class="line"><span class="type">long</span> <span class="title function_">mult2</span><span class="params">(<span class="type">long</span>,<span class="type">long</span>)</span>;</span><br><span class="line"></span><br><span class="line"><span class="type">void</span> <span class="title function_">multstore</span><span class="params">(<span class="type">long</span> x,<span class="type">long</span> y,<span class="type">long</span> *dest)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">long</span> t = mult2(x,y);</span><br><span class="line">	*dest = t;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="type">int</span> <span class="title function_">main</span><span class="params">()</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">long</span> d;</span><br><span class="line">	multstore(<span class="number">2</span>,<span class="number">3</span>,&amp;d);</span><br><span class="line">	<span class="built_in">printf</span>(<span class="string">&quot;2 * 3 --&gt; %d\n&quot;</span>,d);</span><br><span class="line">	<span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">&#125;</span><br><span class="line"><span class="type">long</span> <span class="title function_">mult2</span><span class="params">(<span class="type">long</span> a,<span class="type">long</span> b)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">long</span> s = a * b;</span><br><span class="line">	<span class="keyword">return</span> s;</span><br><span class="line">&#125;</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+
+<p>汇编代码</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line">00000000004005b6 &lt;mult2&gt;:</span><br><span class="line">  4005b6:	48 89 f8             	mov    %rdi,%rax</span><br><span class="line">  4005b9:	48 0f af c6          	imul   %rsi,%rax</span><br><span class="line">  4005bd:	c3                   	retq   </span><br><span class="line"></span><br><span class="line">00000000004005be &lt;multstore&gt;:</span><br><span class="line">  4005be:	53                   	push   %rbx           # save %rbx</span><br><span class="line">  4005bf:	48 89 d3             	mov    %rdx,%rbx      # Copy dest to %rbx</span><br><span class="line">  4005c2:	e8 ef ff ff ff       	callq  4005b6 &lt;mult2&gt; # Call mult2(x,y)</span><br><span class="line">  4005c7:	48 89 03             	mov    %rax,(%rbx)    # Store result at *dest</span><br><span class="line">  4005ca:	5b                   	pop    %rbx           # Restore %rbx</span><br><span class="line">  4005cb:	c3                   	retq                  # Return</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<h3 id="数据格式"><a href="#数据格式" class="headerlink" title="数据格式"></a>数据格式</h3><table>
+<thead>
+<tr>
+<th align="center">C声明</th>
+<th align="center">Intel数据类型</th>
+<th align="center">汇编代码后缀</th>
+<th align="center">大小（字节）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">char</td>
+<td align="center">字节</td>
+<td align="center">b</td>
+<td align="center">1</td>
+</tr>
+<tr>
+<td align="center">short</td>
+<td align="center">字</td>
+<td align="center">w</td>
+<td align="center">2</td>
+</tr>
+<tr>
+<td align="center">int</td>
+<td align="center">双字</td>
+<td align="center">l</td>
+<td align="center">4</td>
+</tr>
+<tr>
+<td align="center">long</td>
+<td align="center">四字</td>
+<td align="center">q</td>
+<td align="center">8</td>
+</tr>
+<tr>
+<td align="center">char*</td>
+<td align="center">四字</td>
+<td align="center">q</td>
+<td align="center">8</td>
+</tr>
+<tr>
+<td align="center">float</td>
+<td align="center">单精度</td>
+<td align="center">s</td>
+<td align="center">4</td>
+</tr>
+<tr>
+<td align="center">double</td>
+<td align="center">双精度</td>
+<td align="center">l</td>
+<td align="center">8</td>
+</tr>
+</tbody></table>
+<h3 id="访问信息"><a href="#访问信息" class="headerlink" title="访问信息"></a>访问信息</h3><p>假设下面的值放在指明的内存地址和寄存器中</p>
+<table>
+<thead>
+<tr>
+<th align="center">地址</th>
+<th align="center">值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">0x100</td>
+<td align="center">0xFF</td>
+</tr>
+<tr>
+<td align="center">0x104</td>
+<td align="center">0xAB</td>
+</tr>
+<tr>
+<td align="center">0x108</td>
+<td align="center">0x13</td>
+</tr>
+<tr>
+<td align="center">0x10C</td>
+<td align="center">0x11</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th align="center">寄存器</th>
+<th align="center">值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">%rax</td>
+<td align="center">0x100</td>
+</tr>
+<tr>
+<td align="center">%rcx</td>
+<td align="center">0x1</td>
+</tr>
+<tr>
+<td align="center">%rdx</td>
+<td align="center">0x3</td>
+</tr>
+</tbody></table>
+<p>那么下表中操作数的值是：</p>
+<table>
+<thead>
+<tr>
+<th align="center">操作数</th>
+<th align="center">值</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">%rax</td>
+<td align="center">0x100</td>
+</tr>
+<tr>
+<td align="center">0x104</td>
+<td align="center">0xAB</td>
+</tr>
+<tr>
+<td align="center">$0x108</td>
+<td align="center">0x108</td>
+</tr>
+<tr>
+<td align="center">(%rax)</td>
+<td align="center">0xFF</td>
+</tr>
+<tr>
+<td align="center">4(%rax)</td>
+<td align="center">0xAB</td>
+</tr>
+<tr>
+<td align="center">9(%rax,%rdx)</td>
+<td align="center">0x11</td>
+</tr>
+<tr>
+<td align="center">260(%rcx,%rdx)</td>
+<td align="center">0x13</td>
+</tr>
+<tr>
+<td align="center">0xFC(,%rcx,4)</td>
+<td align="center">0xFF</td>
+</tr>
+<tr>
+<td align="center">(%rax,%rdx,4)</td>
+<td align="center">0x11</td>
+</tr>
+</tbody></table>
+<h4 id="数据传送指令"><a href="#数据传送指令" class="headerlink" title="数据传送指令"></a>数据传送指令</h4><p>简单的数据传送指令</p>
+<table>
+<thead>
+<tr>
+<th align="center">指令</th>
+<th align="center">效果</th>
+<th align="center">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">MOV S,D</td>
+<td align="center">D$\leftarrow$S</td>
+<td align="center">传送</td>
+</tr>
+<tr>
+<td align="center">movb</td>
+<td align="center"></td>
+<td align="center">传送<strong>字节</strong></td>
+</tr>
+<tr>
+<td align="center">movw</td>
+<td align="center"></td>
+<td align="center">传送<strong>字</strong></td>
+</tr>
+<tr>
+<td align="center">movl</td>
+<td align="center"></td>
+<td align="center">传送<strong>双字</strong></td>
+</tr>
+<tr>
+<td align="center">movq</td>
+<td align="center"></td>
+<td align="center">传送<strong>四字</strong></td>
+</tr>
+<tr>
+<td align="center">movabsq I,R</td>
+<td align="center">R$\leftarrow$I</td>
+<td align="center">传送<strong>绝对的四字</strong></td>
+</tr>
+</tbody></table>
+<p>注意：<strong>传送指令的两个操作数不能都指向内存位置，将一个值从一个内存位置复制到另一个内存位置需要两条指令——第一条指令将源值加载到寄存器中，第二条将该寄存器值写入目的位置</strong></p>
+<p>以下是源和目的类型的五种可能组合</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">movl $0x4050,%eax    #Immediate--Register, 4 Bytes</span><br><span class="line">movw %bp,%sp         #Register--Register, 2 Bytes</span><br><span class="line">movb (%rdi,%rcx),%al #Memory--Register, 1 Bytes</span><br><span class="line">movv $-17,(%rsp)     #Immediate--Memory, 1 Bytes</span><br><span class="line">movq %rax,-12(%rbp)  #Register--Memory, 8 Bytes</span><br></pre></td></tr></table></figure>
+
+<p>零扩展数据传送指令，注意：不存在<code>movzlq</code>，可以用<code>movl</code>来实现</p>
+<table>
+<thead>
+<tr>
+<th align="center">指令</th>
+<th align="center">效果</th>
+<th align="center">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">MOVZ S,R</td>
+<td align="center">R$\leftarrow$零扩展（S）</td>
+<td align="center">以零扩展进行传送</td>
+</tr>
+<tr>
+<td align="center">movzbw</td>
+<td align="center"></td>
+<td align="center">将做了零扩展的<strong>字节</strong>传送到<strong>字</strong></td>
+</tr>
+<tr>
+<td align="center">movzbl</td>
+<td align="center"></td>
+<td align="center">将做了零扩展的<strong>字节</strong>传送到<strong>双字</strong></td>
+</tr>
+<tr>
+<td align="center">movzwl</td>
+<td align="center"></td>
+<td align="center">将做了零扩展的<strong>字</strong>传送到<strong>双字</strong></td>
+</tr>
+<tr>
+<td align="center">movzbq</td>
+<td align="center"></td>
+<td align="center">将做了零扩展的<strong>字节</strong>传送到<strong>四字</strong></td>
+</tr>
+<tr>
+<td align="center">movzwq</td>
+<td align="center"></td>
+<td align="center">将做了零扩展的<strong>字</strong>传送到<strong>四字</strong></td>
+</tr>
+</tbody></table>
+<p>符号扩展数据传送指令，<code>cltq</code>指令只作用于寄存器<code>%eax</code>和<code>%rax</code></p>
+<table>
+<thead>
+<tr>
+<th align="center">指令</th>
+<th align="center">效果</th>
+<th align="center">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">MOVS S,R</td>
+<td align="center">R$\leftarrow$符号扩展（S）</td>
+<td align="center">传送符号扩展的字节</td>
+</tr>
+<tr>
+<td align="center">movsbw</td>
+<td align="center"></td>
+<td align="center">将做了符号扩展的<strong>字节</strong>传送到<strong>字</strong></td>
+</tr>
+<tr>
+<td align="center">movsbl</td>
+<td align="center"></td>
+<td align="center">将做了符号扩展的<strong>字</strong>节传送到<strong>双字</strong></td>
+</tr>
+<tr>
+<td align="center">movswl</td>
+<td align="center"></td>
+<td align="center">将做了符号扩展的<strong>字</strong>传送到<strong>双字</strong></td>
+</tr>
+<tr>
+<td align="center">movsbq</td>
+<td align="center"></td>
+<td align="center">将做了符号扩展的<strong>字节</strong>传送到<strong>四字</strong></td>
+</tr>
+<tr>
+<td align="center">movswq</td>
+<td align="center"></td>
+<td align="center">将做了符号扩展的<strong>字</strong>传送到<strong>四字</strong></td>
+</tr>
+<tr>
+<td align="center">movslq</td>
+<td align="center"></td>
+<td align="center">将做了符号扩展的<strong>双字</strong>传送到<strong>四字</strong></td>
+</tr>
+<tr>
+<td align="center">cltq</td>
+<td align="center"><code>%rax</code>$\leftarrow$符号扩展(<code>%eax</code>)</td>
+<td align="center">把<code>%eax</code>符号扩展到<code>%rax</code></td>
+</tr>
+</tbody></table>
+<h4 id="压入和弹出栈数据"><a href="#压入和弹出栈数据" class="headerlink" title="压入和弹出栈数据"></a>压入和弹出栈数据</h4><p>在x86-64中，程序栈存放在内存中的某个区域，栈向下增长，栈顶元素的地址是所有栈中元素地址最低的，栈指针<code>%rsp</code>保存着栈顶元素的地址。</p>
+<table>
+<thead>
+<tr>
+<th align="center">指令</th>
+<th align="center">效果</th>
+<th align="center">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">pushq S</td>
+<td align="center">R[%rsp]$\leftarrow$R[%rsp]-8; <br>M[R[%rsp]]$\leftarrow$S;</td>
+<td align="center">将四字压入栈</td>
+</tr>
+<tr>
+<td align="center">popq D</td>
+<td align="center">D$\leftarrow$M[R[%rsp]]; <br>R[%rsp]$\leftarrow$R[%rsp]+8;</td>
+<td align="center">将四字弹出栈</td>
+</tr>
+</tbody></table>
+<p>push指令</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#以下指令</span><br><span class="line">pushq %rbp</span><br><span class="line">#等价于</span><br><span class="line">subq $8,%rsp     # Decrement stack pointer</span><br><span class="line">movq %rbp,(%rsp) # Store %rbp on stack</span><br></pre></td></tr></table></figure>
+
+<p>pop指令</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">#以下指令</span><br><span class="line">popq %rax</span><br><span class="line">#等价于</span><br><span class="line">movq (%rsp),%rax # Read %rax from stack</span><br><span class="line">addq $8,%rsp     # Increment stack pointer</span><br></pre></td></tr></table></figure>
+
+<h3 id="算数和逻辑操作"><a href="#算数和逻辑操作" class="headerlink" title="算数和逻辑操作"></a>算数和逻辑操作</h3><p>操作分为四组：加载有效地址、一元操作、二元操作和移位</p>
+<table>
+<thead>
+<tr>
+<th align="center">指令</th>
+<th align="center">效果</th>
+<th align="center">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">leaq S,D</td>
+<td align="center">D $\leftarrow$ &amp;S</td>
+<td align="center">加载有效地址</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">INC D</td>
+<td align="center">D $\leftarrow$ D + 1</td>
+<td align="center">加1</td>
+</tr>
+<tr>
+<td align="center">DEC D</td>
+<td align="center">D $\leftarrow$ D - 1</td>
+<td align="center">减1</td>
+</tr>
+<tr>
+<td align="center">NEG D</td>
+<td align="center">D $\leftarrow$ -D</td>
+<td align="center">取负</td>
+</tr>
+<tr>
+<td align="center">NOT D</td>
+<td align="center">D $\leftarrow$ ~D</td>
+<td align="center">取反</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">ADD S,D</td>
+<td align="center">D $\leftarrow$ D + S</td>
+<td align="center">加</td>
+</tr>
+<tr>
+<td align="center">SUB S,D</td>
+<td align="center">D $\leftarrow$ D - S</td>
+<td align="center">减</td>
+</tr>
+<tr>
+<td align="center">IMUL S,D</td>
+<td align="center">D $\leftarrow$ D * S</td>
+<td align="center">乘</td>
+</tr>
+<tr>
+<td align="center">XOR S,D</td>
+<td align="center">D $\leftarrow$ D ^ S</td>
+<td align="center">异或</td>
+</tr>
+<tr>
+<td align="center">OR S,D</td>
+<td align="center">D $\leftarrow$ D｜S</td>
+<td align="center">或</td>
+</tr>
+<tr>
+<td align="center">AND S,D</td>
+<td align="center">D $\leftarrow$ D &amp; S</td>
+<td align="center">与</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">SAL k,D</td>
+<td align="center">D $\leftarrow$ D &lt;&lt; k</td>
+<td align="center">左移</td>
+</tr>
+<tr>
+<td align="center">SHL k,D</td>
+<td align="center">D $\leftarrow$ D &lt;&lt; k</td>
+<td align="center">左移（等同于SAL）</td>
+</tr>
+<tr>
+<td align="center">SAR k,D</td>
+<td align="center">D $\leftarrow$ D &gt;&gt; $_{A}$k</td>
+<td align="center">算数右移</td>
+</tr>
+<tr>
+<td align="center">SHR k,D</td>
+<td align="center">D $\leftarrow$ D &gt;&gt; $_{L}$k</td>
+<td align="center">逻辑右移</td>
+</tr>
+</tbody></table>
+<h4 id="加载有效地址"><a href="#加载有效地址" class="headerlink" title="加载有效地址"></a>加载有效地址</h4><p>加载有效地址指令<code>leaq</code>实际上是<code>movq</code>指令的变形</p>
+<p>举例：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">leaq 7(%rdx,%rdx,4),%rax #%rdx的值为x，%rax的值为5x+7</span><br></pre></td></tr></table></figure>
+<p>从C程序看</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="type">long</span> <span class="title function_">scale</span><span class="params">(<span class="type">long</span> x, <span class="type">long</span> y, <span class="type">long</span> z)</span></span><br><span class="line">&#123;</span><br><span class="line">    <span class="type">long</span> t = x + <span class="number">4</span> * y + <span class="number">12</span> * z;</span><br><span class="line">    <span class="keyword">return</span> t;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>编译时，该函数的算数运算以三条<code>leaq</code>指令实现</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">scale:</span><br><span class="line">    leaq (%rdi,%rsi,4),%rax # x + 4 * y</span><br><span class="line">    leaq (%rdx,%rdx,2),%rdx # z + 2 * z = 3 * z</span><br><span class="line">    leaq (%rax,%rdx,4),%rax # (x + 4 * y) + 4 * (3 * z)</span><br><span class="line">    ret</span><br></pre></td></tr></table></figure>
+<h4 id="一元和二元操作"><a href="#一元和二元操作" class="headerlink" title="一元和二元操作"></a>一元和二元操作</h4><p>第二组是一元操作，第三组是二元操作</p>
+<h4 id="移位操作"><a href="#移位操作" class="headerlink" title="移位操作"></a>移位操作</h4><p>算数移位：填上符号位；<br>逻辑移位：填上0；</p>
+<h4 id="特殊的算数操作"><a href="#特殊的算数操作" class="headerlink" title="特殊的算数操作"></a>特殊的算数操作</h4><table>
+<thead>
+<tr>
+<th align="center">指令</th>
+<th align="center">效果</th>
+<th align="center">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">imulq S</td>
+<td align="center">R[%rdx]:R[%rax] $\leftarrow$ S×R[%rax]</td>
+<td align="center">有符号乘法</td>
+</tr>
+<tr>
+<td align="center">mulq S</td>
+<td align="center">R[%rdx]:R[%rax] $\leftarrow$ S×R[%rax]</td>
+<td align="center">无符号乘法</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">clto</td>
+<td align="center">R[%rdx]:R[%rax] $\leftarrow$ 符号扩展(R[%rax])</td>
+<td align="center">转换为八字</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">idivq S</td>
+<td align="center">R[%rdx] $\leftarrow$ R[%rdx]:R[%rax] mod S<br>R[%rdx] $\leftarrow$ R[%rdx]:R[%rax] ÷ S</td>
+<td align="center">有符号除法</td>
+</tr>
+<tr>
+<td align="center">divq</td>
+<td align="center">R[%rdx] $\leftarrow$ R[%rdx]:R[%rax] mod S<br>R[%rdx] $\leftarrow$ R[%rdx]:R[%rax] ÷ S</td>
+<td align="center">无符号除法</td>
+</tr>
+</tbody></table>
+<p>一对寄存器<code>%rdx</code>和<code>%rax</code>组成一个128位的八字</p>
+<h3 id="控制"><a href="#控制" class="headerlink" title="控制"></a>控制</h3><p>机器代码提供两种基本的低级机制来实现现有的条件的行为：</p>
+<ul>
+<li>测试数据值</li>
+<li>根据测试结果来改变控制流或者数据流</li>
+</ul>
+<h4 id="条件码"><a href="#条件码" class="headerlink" title="条件码"></a>条件码</h4><p>条件码寄存器</p>
+<ul>
+<li><strong>CF</strong>：进位标志。最近的操作使最高位产生了进位。可以用来检查无符号操作的溢出。</li>
+<li><strong>ZF</strong>：零标志。最近的操作得到的结果为0。</li>
+<li><strong>SF</strong>：符号标志。最近的操作得到的结果为负数。</li>
+<li><strong>OF</strong>：溢出标志。最近的操作导致一个补码溢出——正溢出或者负溢出。</li>
+</ul>
+<p>比较和测试指令</p>
+<table>
+<thead>
+<tr>
+<th align="center">指令</th>
+<th align="center">基于</th>
+<th align="center">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">CMP $S_{1}$,$S_{2}$</td>
+<td align="center">$S_{1}-S_{2}$</td>
+<td align="center">比较</td>
+</tr>
+<tr>
+<td align="center">cmpb</td>
+<td align="center"></td>
+<td align="center">比较字节</td>
+</tr>
+<tr>
+<td align="center">cmpw</td>
+<td align="center"></td>
+<td align="center">比较字</td>
+</tr>
+<tr>
+<td align="center">cmpl</td>
+<td align="center"></td>
+<td align="center">比较双字</td>
+</tr>
+<tr>
+<td align="center">cmpq</td>
+<td align="center"></td>
+<td align="center">比较四字</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">TEST $S_{1}$,$S_{2}$</td>
+<td align="center">$S_{1} &amp; S_{2}$</td>
+<td align="center">测试</td>
+</tr>
+<tr>
+<td align="center">testb</td>
+<td align="center"></td>
+<td align="center">测试字节</td>
+</tr>
+<tr>
+<td align="center">testw</td>
+<td align="center"></td>
+<td align="center">测试字</td>
+</tr>
+<tr>
+<td align="center">testl</td>
+<td align="center"></td>
+<td align="center">测试双字</td>
+</tr>
+<tr>
+<td align="center">testq</td>
+<td align="center"></td>
+<td align="center">测试四字</td>
+</tr>
+</tbody></table>
+<h4 id="访问条件码"><a href="#访问条件码" class="headerlink" title="访问条件码"></a>访问条件码</h4><p>条件码一般不能直接读取，常用方法有三种：</p>
+<ul>
+<li>根据条件码的某种组合，将一个字节设置为0或者1,2</li>
+<li>条件跳转到程序的某个其他部分</li>
+<li>有条件的传送数据</li>
+</ul>
+<p>set指令</p>
+<table>
+<thead>
+<tr>
+<th align="center">指令</th>
+<th align="center">同义名</th>
+<th align="center">效果</th>
+<th align="center">设置条件</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">sete D</td>
+<td align="center">setz</td>
+<td align="center">D $\leftarrow$ ZF</td>
+<td align="center">相等&#x2F;零</td>
+</tr>
+<tr>
+<td align="center">setne D</td>
+<td align="center">setnz</td>
+<td align="center">D $\leftarrow$ ~ZF</td>
+<td align="center">不等&#x2F;非零</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">sets D</td>
+<td align="center"></td>
+<td align="center">D $\leftarrow$ SF</td>
+<td align="center">负数</td>
+</tr>
+<tr>
+<td align="center">setns D</td>
+<td align="center"></td>
+<td align="center">D $\leftarrow$ ~SF</td>
+<td align="center">非负数</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">setg D</td>
+<td align="center">setnle</td>
+<td align="center">D $\leftarrow$ ~(SF^OF) &amp; ~ZF</td>
+<td align="center">大于（有符号&gt;）</td>
+</tr>
+<tr>
+<td align="center">setge D</td>
+<td align="center">setnl</td>
+<td align="center">D $\leftarrow$ ~(SF^OF)</td>
+<td align="center">大于等于（有符号&gt;&#x3D;)</td>
+</tr>
+<tr>
+<td align="center">setl D</td>
+<td align="center">setnge</td>
+<td align="center">D $\leftarrow$ SF^OF</td>
+<td align="center">小于（有符号&lt;）</td>
+</tr>
+<tr>
+<td align="center">setle D</td>
+<td align="center">setng</td>
+<td align="center">D $\leftarrow$ (SF^OF)｜ZF</td>
+<td align="center">小于等于（有符号&lt;&#x3D;）</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">seta D</td>
+<td align="center">setnbe</td>
+<td align="center">D $\leftarrow$ <del>CF&amp;</del>ZF</td>
+<td align="center">超过（无符号&gt;）</td>
+</tr>
+<tr>
+<td align="center">setae D</td>
+<td align="center">setnb</td>
+<td align="center">D $\leftarrow$ ~CF</td>
+<td align="center">超过或相等（无符号&gt;&#x3D;）</td>
+</tr>
+<tr>
+<td align="center">setb D</td>
+<td align="center">setnae</td>
+<td align="center">D $\leftarrow$ CF</td>
+<td align="center">低于（无符号&lt;）</td>
+</tr>
+<tr>
+<td align="center">setbe D</td>
+<td align="center">setna</td>
+<td align="center">D $\leftarrow$ CF｜ZF</td>
+<td align="center">低于或相等（无符号&lt;&#x3D;)</td>
+</tr>
+</tbody></table>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"># int comp(data_t a,data_t b)</span><br><span class="line"># a in %rdi, b in %rsi</span><br><span class="line">comp:</span><br><span class="line">    cmpq %rsi,%rdi  # Compare a:b</span><br><span class="line">    setl %al        # Set low-order byte of %eax to 0 or 1</span><br><span class="line">    movzbl %al,%eax # Clear rest of %eax (and rest of %rax)</span><br><span class="line">    ret</span><br></pre></td></tr></table></figure>
+
+<h4 id="跳转指令"><a href="#跳转指令" class="headerlink" title="跳转指令"></a>跳转指令</h4><figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">    movq $0,%rax</span><br><span class="line">    jmp .L1</span><br><span class="line">    movq (%rax),%rdx</span><br><span class="line">.L1:</span><br><span class="line">    popq %rdx</span><br></pre></td></tr></table></figure>
+
+<p><code>jmp</code>无条件跳转</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">jmp *%rax   # 间接跳转</span><br><span class="line">jmp *(%rax) # 寄存从内存加载地址跳转</span><br></pre></td></tr></table></figure>
+<p>jmp指令</p>
+<table>
+<thead>
+<tr>
+<th align="center">指令</th>
+<th align="center">同义名</th>
+<th align="center">跳转条件</th>
+<th align="center">描述</th>
+</tr>
+</thead>
+<tbody><tr>
+<td align="center">jmp $label$</td>
+<td align="center"></td>
+<td align="center">1</td>
+<td align="center">直接跳转</td>
+</tr>
+<tr>
+<td align="center">jmp *$Operand$</td>
+<td align="center"></td>
+<td align="center">1</td>
+<td align="center">间接跳转</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">je $label$</td>
+<td align="center">jz</td>
+<td align="center">ZF</td>
+<td align="center">相等&#x2F;零</td>
+</tr>
+<tr>
+<td align="center">jne $label$</td>
+<td align="center">jnz</td>
+<td align="center">~ZF</td>
+<td align="center">不相等&#x2F;非零</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">js $label$</td>
+<td align="center"></td>
+<td align="center">SF</td>
+<td align="center">负数</td>
+</tr>
+<tr>
+<td align="center">jns $label$</td>
+<td align="center"></td>
+<td align="center">~SF</td>
+<td align="center">非负数</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">jg $label$</td>
+<td align="center">jnle</td>
+<td align="center">~(SF^OF) &amp; ~ZF</td>
+<td align="center">大于（有符号&gt;）</td>
+</tr>
+<tr>
+<td align="center">jge $label$</td>
+<td align="center">jnl</td>
+<td align="center">~(SF^OF)</td>
+<td align="center">大于等于（有符号&gt;&#x3D;)</td>
+</tr>
+<tr>
+<td align="center">jl $label$</td>
+<td align="center">jnge</td>
+<td align="center">SF^OF</td>
+<td align="center">小于（有符号&lt;）</td>
+</tr>
+<tr>
+<td align="center">jle $label$</td>
+<td align="center">jng</td>
+<td align="center">(SF^OF)｜ZF</td>
+<td align="center">小于等于（有符号&lt;&#x3D;）</td>
+</tr>
+<tr>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+<td align="center"></td>
+</tr>
+<tr>
+<td align="center">ja $label$</td>
+<td align="center">jnbe</td>
+<td align="center"><del>CF&amp;</del>ZF</td>
+<td align="center">超过（无符号&gt;）</td>
+</tr>
+<tr>
+<td align="center">jae $label$</td>
+<td align="center">jnb</td>
+<td align="center">~CF</td>
+<td align="center">超过或相等（无符号&gt;&#x3D;）</td>
+</tr>
+<tr>
+<td align="center">jb $label$</td>
+<td align="center">jnae</td>
+<td align="center">CF</td>
+<td align="center">低于（无符号&lt;）</td>
+</tr>
+<tr>
+<td align="center">jbe $label$</td>
+<td align="center">jna</td>
+<td align="center">CF｜ZF</td>
+<td align="center">低于或相等（无符号&lt;&#x3D;)</td>
+</tr>
+</tbody></table>
+<h4 id="跳转指令的编码"><a href="#跳转指令的编码" class="headerlink" title="跳转指令的编码"></a>跳转指令的编码</h4><ul>
+<li>地址差编码</li>
+<li>绝对地址</li>
+</ul>
+<h4 id="用条件控制来实现实现条件分支"><a href="#用条件控制来实现实现条件分支" class="headerlink" title="用条件控制来实现实现条件分支"></a>用条件控制来实现实现条件分支</h4><p>To Be Continue</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Appl3s</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://example.com/2017/06/07/csapp-learning-records/">http://example.com/2017/06/07/csapp-learning-records/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2025 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>Do you believe in <strong>DESTINY</strong>?</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/learn/"># learn</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/08/03/boring-day/">boring-day</a>
+            
+            
+            <a class="next" rel="next" href="/2017/06/07/appl3-s-determination/">入坑启事</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Appl3s | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

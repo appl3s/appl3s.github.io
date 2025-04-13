@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Appl3s">
+
+
+
+
+
+<title>PHP中奇怪的弱类型和强转 | Appl3s的博客</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Appl3s&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Appl3s&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">PHP中奇怪的弱类型和强转</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Appl3s</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">June 7, 2017&nbsp;&nbsp;15:40:53</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <blockquote>
+<p>这个要从一个CTF题目讲起了</p>
+</blockquote>
+<span id="more"></span>
+<h2 id="0x00-题目"><a href="#0x00-题目" class="headerlink" title="0x00 题目"></a>0x00 题目</h2><p>今天复现一个TCTF线下赛的题目<code>Lucky Game</code><br>题目源码很少，只有一个文件</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br><span class="line">198</span><br><span class="line">199</span><br><span class="line">200</span><br><span class="line">201</span><br><span class="line">202</span><br><span class="line">203</span><br><span class="line">204</span><br><span class="line">205</span><br><span class="line">206</span><br><span class="line">207</span><br><span class="line">208</span><br><span class="line">209</span><br><span class="line">210</span><br><span class="line">211</span><br><span class="line">212</span><br><span class="line">213</span><br><span class="line">214</span><br><span class="line">215</span><br><span class="line">216</span><br><span class="line">217</span><br><span class="line">218</span><br><span class="line">219</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span> <span class="title function_ invoke__">session_start</span>(); <span class="meta">?&gt;</span></span><br><span class="line">&lt;!DOCTYPE html&gt;</span><br><span class="line">&lt;html&gt;</span><br><span class="line">&lt;head&gt;</span><br><span class="line">    &lt;title&gt;Lucky Game&lt;/title&gt;</span><br><span class="line">    &lt;link rel=<span class="string">&quot;stylesheet&quot;</span> href=<span class="string">&quot;https://fonts.googleapis.com/css?family=Raleway:200&quot;</span>&gt;</span><br><span class="line">    &lt;link href=<span class="string">&quot;https://fonts.googleapis.com/css?family=Noto+Sans&quot;</span> rel=<span class="string">&quot;stylesheet&quot;</span>&gt; </span><br><span class="line">    &lt;link rel=<span class="string">&quot;stylesheet&quot;</span> href=<span class="string">&quot;https://unpkg.com/purecss@0.6.2/build/pure-min.css&quot;</span> integrity=<span class="string">&quot;sha384-UQiGfs9ICog+LwheBSRCt1o5cbyKIHbwjWscjemyBMT9YCUMZffs6UqUTd0hObXD&quot;</span> crossorigin=<span class="string">&quot;anonymous&quot;</span>&gt;</span><br><span class="line">    &lt;link rel=<span class="string">&quot;stylesheet&quot;</span> href=<span class="string">&quot;https://purecss.io/combo/1.18.13?/css/main-grid.css&amp;amp;/css/main.css&amp;amp;/css/menus.css&amp;amp;/css/rainbow/baby-blue.css&quot;</span>&gt;</span><br><span class="line">    &lt;style&gt;</span><br><span class="line">    .header&#123;font-family: <span class="string">&#x27;Noto Sans&#x27;</span>, sans-serif;&#125;</span><br><span class="line">    .header h1&#123;color: <span class="title function_ invoke__">rgb</span>(<span class="number">202</span>, <span class="number">60</span>, <span class="number">60</span>);&#125;</span><br><span class="line">    .button-error &#123;background: <span class="title function_ invoke__">rgb</span>(<span class="number">202</span>, <span class="number">60</span>, <span class="number">60</span>);&#125;</span><br><span class="line">    .button-success &#123;background: <span class="title function_ invoke__">rgb</span>(<span class="number">28</span>, <span class="number">184</span>, <span class="number">65</span>);&#125;</span><br><span class="line">    &lt;/style&gt;</span><br><span class="line">&lt;/head&gt;</span><br><span class="line">&lt;body&gt;</span><br><span class="line">&lt;div id=<span class="string">&quot;layout&quot;</span>&gt;</span><br><span class="line">&lt;div id=<span class="string">&quot;menu&quot;</span>&gt;</span><br><span class="line">    &lt;div <span class="class"><span class="keyword">class</span>=&quot;<span class="title">pure</span>-<span class="title">menu</span>&quot;&gt;</span></span><br><span class="line"><span class="class">        &lt;<span class="title">a</span> <span class="title">class</span>=&quot;<span class="title">pure</span>-<span class="title">menu</span>-<span class="title">heading</span>&quot; <span class="title">href</span>=&quot;#&quot;&gt;<span class="title">TCTF</span>&lt;/<span class="title">a</span>&gt;</span></span><br><span class="line"><span class="class">    &lt;/<span class="title">div</span>&gt;</span></span><br><span class="line"><span class="class">&lt;/<span class="title">div</span>&gt;</span></span><br><span class="line"><span class="class">&lt;<span class="title">div</span> <span class="title">id</span>=&quot;<span class="title">main</span>&quot;&gt;</span></span><br><span class="line"><span class="class">    &lt;<span class="title">div</span> <span class="title">class</span>=&quot;<span class="title">header</span>&quot;&gt;</span></span><br><span class="line"><span class="class">        &lt;<span class="title">h1</span>&gt;幸运数字&lt;/<span class="title">h1</span>&gt;</span></span><br><span class="line"><span class="class">        &lt;<span class="title">h2</span>&gt;<span class="title">Shall</span> <span class="title">we</span> <span class="title">play</span> <span class="title">a</span> &quot;<span class="title">lucky</span>&quot; <span class="title">game</span>?&lt;/<span class="title">h2</span>&gt;</span></span><br><span class="line"><span class="class">    &lt;/<span class="title">div</span>&gt;</span></span><br><span class="line"><span class="class">&lt;<span class="title">div</span> <span class="title">class</span>=&quot;<span class="title">content</span>&quot;&gt;</span></span><br><span class="line"><span class="class">&lt;?<span class="title">php</span></span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"><span class="title">require</span> &#x27;<span class="title">config</span>.<span class="title">php</span>&#x27;;</span></span><br><span class="line"><span class="class"><span class="title">if</span> (!$<span class="title">link</span>=<span class="title">mysqli_connect</span>(&#x27;<span class="title">localhost</span>&#x27;, <span class="title">MYSQL_USER</span>, <span class="title">MYSQL_PASS</span>)) <span class="title">die</span>(&#x27;<span class="title">Connection</span> <span class="title">error</span>&#x27;);</span></span><br><span class="line"><span class="class"><span class="title">if</span> (!<span class="title">mysqli_select_db</span>($<span class="title">link</span>,&#x27;<span class="title">lucky</span>&#x27;)) <span class="title">die</span>(&#x27;<span class="title">Database</span> <span class="title">error</span>&#x27;);</span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class">$<span class="title">tbls</span> = &quot;<span class="title">SELECT</span> <span class="title">group_concat</span>(<span class="title">table_name</span> <span class="title">SEPARATOR</span> &#x27;|&#x27;) <span class="title">FROM</span> <span class="title">information_schema</span>.<span class="title">tables</span> <span class="title">WHERE</span> <span class="title">table_schema</span>=<span class="title">database</span>()&quot;;</span></span><br><span class="line"><span class="class">$<span class="title">cols</span> = &quot;<span class="title">SELECT</span> <span class="title">group_concat</span>(<span class="title">column_name</span> <span class="title">SEPARATOR</span> &#x27;|&#x27;) <span class="title">FROM</span> <span class="title">information_schema</span>.<span class="title">columns</span> <span class="title">WHERE</span> <span class="title">table_schema</span>=<span class="title">database</span>()&quot;;</span></span><br><span class="line"><span class="class">$<span class="title">query</span> = <span class="title">mysqli_query</span>($<span class="title">link</span>,$<span class="title">tbls</span>,<span class="title">MYSQLI_USE_RESULT</span>);</span></span><br><span class="line"><span class="class">$<span class="title">tbls_name</span> = <span class="title">mysqli_fetch_array</span>($<span class="title">query</span>)[0];</span></span><br><span class="line"><span class="class"><span class="title">mysqli_free_result</span>($<span class="title">query</span>);</span></span><br><span class="line"><span class="class">$<span class="title">query</span> = <span class="title">mysqli_query</span>($<span class="title">link</span>,$<span class="title">cols</span>,<span class="title">MYSQLI_USE_RESULT</span>);</span></span><br><span class="line"><span class="class">$<span class="title">cols_name</span> = <span class="title">mysqli_fetch_array</span>($<span class="title">query</span>)[0];</span></span><br><span class="line"><span class="class"><span class="title">mysqli_free_result</span>($<span class="title">query</span>);</span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"># <span class="title">CREATE</span> <span class="title">TABLE</span> <span class="title">users</span>(<span class="title">id</span> <span class="title">int</span> <span class="title">NOT</span> <span class="title">NULL</span>,<span class="title">username</span> <span class="title">varchar</span>(24),<span class="title">password</span> <span class="title">varchar</span>(32),<span class="title">points</span> <span class="title">int</span>,<span class="title">UNIQUE</span> <span class="title">KEY</span>(<span class="title">username</span>));</span></span><br><span class="line"><span class="class"># <span class="title">INSERT</span> <span class="title">INTO</span> <span class="title">users</span> <span class="title">VALUES</span>(1,&quot;<span class="title">admin</span>&quot;,<span class="title">md5</span>(<span class="title">password_of_admin</span>),10);</span></span><br><span class="line"><span class="class"># <span class="title">CREATE</span> <span class="title">TABLE</span> <span class="title">logs</span>(<span class="title">id</span> <span class="title">int</span> <span class="title">NOT</span> <span class="title">NULL</span>,<span class="title">log</span> <span class="title">varchar</span>(64));</span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"></span></span><br><span class="line"><span class="class"><span class="title">foreach</span>($<span class="title">_POST</span> <span class="title">as</span> $<span class="title">k</span> =&gt; $<span class="title">v</span>)</span>&#123;</span><br><span class="line">    <span class="keyword">if</span>(!<span class="keyword">empty</span>(<span class="variable">$v</span>) &amp;&amp; <span class="title function_ invoke__">is_string</span>(<span class="variable">$v</span>))</span><br><span class="line">        <span class="variable">$_POST</span>[<span class="variable">$k</span>] = <span class="title function_ invoke__">trim</span>(<span class="title function_ invoke__">mysqli_escape_string</span>(<span class="variable">$link</span>,<span class="variable">$v</span>));</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">unset</span>(<span class="variable">$_POST</span>[<span class="variable">$k</span>]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">foreach</span>(<span class="variable">$_GET</span> <span class="keyword">as</span> <span class="variable">$k</span> =&gt; <span class="variable">$v</span>)&#123;</span><br><span class="line">    <span class="keyword">if</span>(!<span class="keyword">empty</span>(<span class="variable">$v</span>) &amp;&amp; <span class="title function_ invoke__">is_string</span>(<span class="variable">$v</span>))</span><br><span class="line">        <span class="variable">$_GET</span>[<span class="variable">$k</span>] = <span class="title function_ invoke__">trim</span>(<span class="title function_ invoke__">mysqli_escape_string</span>(<span class="variable">$link</span>,<span class="variable">$v</span>));</span><br><span class="line">    <span class="keyword">else</span></span><br><span class="line">        <span class="keyword">unset</span>(<span class="variable">$_GET</span>[<span class="variable">$k</span>]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">filter</span>(<span class="params"><span class="variable">$s</span></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">global</span> <span class="variable">$tbls_name</span>,<span class="variable">$cols_name</span>;</span><br><span class="line">    <span class="variable">$blacklist</span> = <span class="string">&quot;sleep|benchmark|order|limit|exp|extract|xml|floor|rand|count|&quot;</span>.<span class="variable">$tbls_name</span>.<span class="string">&#x27;|&#x27;</span>.<span class="variable">$cols_name</span>; <span class="comment"># Ninjas need nothing</span></span><br><span class="line">    <span class="keyword">if</span>(<span class="title function_ invoke__">preg_match</span>(<span class="string">&quot;/<span class="subst">&#123;$blacklist&#125;</span>/is&quot;</span>,<span class="variable">$s</span>,<span class="variable">$a</span>)) <span class="keyword">die</span>(<span class="variable">$blacklist</span>.<span class="string">&quot;\n&quot;</span>.<span class="variable">$a</span>[<span class="number">0</span>].<span class="string">&quot;\n&quot;</span>.<span class="variable">$s</span>.<span class="string">&quot;\n&quot;</span>.<span class="string">&quot;&lt;aside&gt;0ops!&lt;/aside&gt;&quot;</span>);</span><br><span class="line">    <span class="keyword">return</span> <span class="variable">$s</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">register</span>(<span class="params"><span class="variable">$username</span>,<span class="variable">$password</span></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">global</span> <span class="variable">$link</span>;</span><br><span class="line">    <span class="variable">$q</span> = <span class="title function_ invoke__">sprintf</span>(<span class="string">&quot;INSERT INTO users VALUES (id+1,&#x27;%s&#x27;,md5(&#x27;%s&#x27;),10)&quot;</span>,</span><br><span class="line">        <span class="title function_ invoke__">filter</span>(<span class="variable">$username</span>),<span class="title function_ invoke__">filter</span>(<span class="variable">$password</span>));</span><br><span class="line">    <span class="keyword">if</span>(!<span class="variable">$query</span> = <span class="title function_ invoke__">mysqli_query</span>(<span class="variable">$link</span>,<span class="variable">$q</span>,MYSQLI_USE_RESULT)) <span class="keyword">return</span> <span class="literal">FALSE</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">TRUE</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">login</span>(<span class="params"><span class="variable">$username</span>,<span class="variable">$password</span></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">global</span> <span class="variable">$link</span>;</span><br><span class="line">    <span class="variable">$q</span> = <span class="title function_ invoke__">sprintf</span>(<span class="string">&quot;SELECT * FROM users WHERE username = &#x27;%s&#x27; AND password = md5(&#x27;%s&#x27;)&quot;</span>,</span><br><span class="line">        <span class="title function_ invoke__">filter</span>(<span class="variable">$username</span>),<span class="title function_ invoke__">filter</span>(<span class="variable">$password</span>));</span><br><span class="line">    <span class="keyword">if</span>(!<span class="variable">$query</span> = <span class="title function_ invoke__">mysqli_query</span>(<span class="variable">$link</span>,<span class="variable">$q</span>,MYSQLI_USE_RESULT)) <span class="keyword">return</span> <span class="literal">FALSE</span>;</span><br><span class="line">    <span class="variable">$result</span> = <span class="title function_ invoke__">mysqli_fetch_array</span>(<span class="variable">$query</span>);</span><br><span class="line">    <span class="title function_ invoke__">mysqli_free_result</span>(<span class="variable">$query</span>);</span><br><span class="line">    <span class="keyword">if</span>(<span class="title function_ invoke__">count</span>(<span class="variable">$result</span>)&gt;<span class="number">0</span>)&#123;</span><br><span class="line">        <span class="variable">$_SESSION</span>[<span class="string">&#x27;id&#x27;</span>] = <span class="variable">$result</span>[<span class="string">&#x27;id&#x27;</span>];</span><br><span class="line">        <span class="variable">$_SESSION</span>[<span class="string">&#x27;user&#x27;</span>] = <span class="variable">$result</span>[<span class="string">&#x27;username&#x27;</span>];</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">TRUE</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">unset</span>(<span class="variable">$_SESSION</span>[<span class="string">&#x27;id&#x27;</span>],<span class="variable">$_SESSION</span>[<span class="string">&#x27;user&#x27;</span>]);</span><br><span class="line">        <span class="keyword">return</span> <span class="literal">FALSE</span>;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">user_log</span>(<span class="params"><span class="variable">$s</span></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">global</span> <span class="variable">$link</span>;</span><br><span class="line">    <span class="variable">$q</span> = <span class="title function_ invoke__">sprintf</span>(<span class="string">&quot;INSERT INTO logs VALUES (id+1,&#x27;%s&#x27;)&quot;</span>,</span><br><span class="line">        <span class="title function_ invoke__">filter</span>(<span class="variable">$_SESSION</span>[<span class="string">&#x27;id&#x27;</span>].<span class="string">&#x27;|&#x27;</span>.<span class="variable">$s</span>));</span><br><span class="line">    <span class="keyword">if</span>(!<span class="variable">$query</span> = <span class="title function_ invoke__">mysqli_query</span>(<span class="variable">$link</span>,<span class="variable">$q</span>)) <span class="keyword">return</span> <span class="literal">FALSE</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">TRUE</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">update_point</span>(<span class="params"><span class="variable">$p</span></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">global</span> <span class="variable">$link</span>;</span><br><span class="line">    <span class="variable">$q</span> = <span class="title function_ invoke__">sprintf</span>(<span class="string">&quot;UPDATE users SET points=points+%d WHERE id = %d&quot;</span>,</span><br><span class="line">        <span class="variable">$p</span>,<span class="variable">$_SESSION</span>[<span class="string">&#x27;id&#x27;</span>]);</span><br><span class="line">    <span class="keyword">if</span>(!<span class="variable">$query</span> = <span class="title function_ invoke__">mysqli_query</span>(<span class="variable">$link</span>,<span class="variable">$q</span>)) <span class="keyword">return</span> <span class="literal">FALSE</span>;</span><br><span class="line">    <span class="keyword">if</span>(!<span class="title function_ invoke__">user_log</span>(<span class="string">&quot;Update &quot;</span>.<span class="variable">$p</span>)) <span class="keyword">return</span> <span class="literal">FALSE</span>;</span><br><span class="line">    <span class="keyword">return</span> <span class="literal">TRUE</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">function</span> <span class="title">my_point</span>(<span class="params"></span>)</span>&#123;</span><br><span class="line">    <span class="keyword">global</span> <span class="variable">$link</span>;</span><br><span class="line">    <span class="variable">$q</span> = <span class="title function_ invoke__">sprintf</span>(<span class="string">&quot;SELECT * FROM users WHERE username = &#x27;%s&#x27;&quot;</span>,</span><br><span class="line">        <span class="title function_ invoke__">filter</span>(<span class="variable">$_SESSION</span>[<span class="string">&#x27;user&#x27;</span>]));</span><br><span class="line">    <span class="keyword">if</span>(!<span class="variable">$query</span> = <span class="title function_ invoke__">mysqli_query</span>(<span class="variable">$link</span>,<span class="variable">$q</span>,MYSQLI_USE_RESULT)) <span class="keyword">return</span> <span class="literal">FALSE</span>;</span><br><span class="line">    <span class="variable">$result</span> = <span class="title function_ invoke__">mysqli_fetch_array</span>(<span class="variable">$query</span>);</span><br><span class="line">    <span class="title function_ invoke__">mysqli_free_result</span>(<span class="variable">$query</span>);</span><br><span class="line">    <span class="keyword">return</span> (<span class="keyword">int</span>)(<span class="variable">$result</span>[<span class="string">&#x27;points&#x27;</span>]);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">switch</span>(@<span class="variable">$_GET</span>[<span class="string">&#x27;action&#x27;</span>])&#123;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;register&#x27;</span>:</span><br><span class="line">        <span class="keyword">if</span>(!<span class="keyword">empty</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;user&#x27;</span>]) &amp;&amp; !<span class="keyword">empty</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;pass&#x27;</span>]))</span><br><span class="line">            <span class="keyword">if</span>(!<span class="title function_ invoke__">register</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;user&#x27;</span>],<span class="variable">$_POST</span>[<span class="string">&#x27;pass&#x27;</span>]))</span><br><span class="line">                <span class="keyword">die</span>(<span class="string">&quot;&lt;aside&gt;Something went wrong!&lt;/aside&gt;&quot;</span>);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;login&#x27;</span>:</span><br><span class="line">        <span class="keyword">if</span>(!<span class="keyword">empty</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;user&#x27;</span>]) &amp;&amp; !<span class="keyword">empty</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;pass&#x27;</span>]))</span><br><span class="line">            <span class="title function_ invoke__">login</span>(<span class="variable">$_POST</span>[<span class="string">&#x27;user&#x27;</span>],<span class="variable">$_POST</span>[<span class="string">&#x27;pass&#x27;</span>]);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">case</span> <span class="string">&#x27;logout&#x27;</span>:</span><br><span class="line">        <span class="keyword">unset</span>(<span class="variable">$_SESSION</span>[<span class="string">&#x27;user&#x27;</span>],<span class="variable">$_SESSION</span>[<span class="string">&#x27;id&#x27;</span>]);</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">    <span class="keyword">default</span>:</span><br><span class="line">        <span class="keyword">break</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(<span class="keyword">empty</span>(<span class="variable">$_SESSION</span>[<span class="string">&#x27;user&#x27;</span>]))&#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">&lt;&lt;&lt;EOF</span></span><br><span class="line"><span class="string">        &lt;form action=&quot;?action=register&quot; method=POST class=&quot;pure-form pure-form-stacked&quot;&gt;</span></span><br><span class="line"><span class="string">            &lt;fieldset&gt;</span></span><br><span class="line"><span class="string">                &lt;input type=text name=user required placeholder=&quot;Username&quot; /&gt;</span></span><br><span class="line"><span class="string">                &lt;input type=password name=pass required placeholder=&quot;Password&quot; /&gt;</span></span><br><span class="line"><span class="string">                &lt;button type=&quot;submit&quot; class=&quot;pure-button pure-button-primary&quot;&gt;Register&lt;/button&gt;</span></span><br><span class="line"><span class="string">            &lt;/fieldset&gt;</span></span><br><span class="line"><span class="string">        &lt;/form&gt;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">        &lt;form action=&quot;?action=login&quot; method=POST class=&quot;pure-form pure-form-stacked&quot;&gt;</span></span><br><span class="line"><span class="string">            &lt;fieldset&gt;</span></span><br><span class="line"><span class="string">                &lt;input type=text name=user required placeholder=&quot;Username&quot;  /&gt;</span></span><br><span class="line"><span class="string">                &lt;input type=password name=pass required placeholder=&quot;Password&quot; /&gt;</span></span><br><span class="line"><span class="string">                &lt;button type=&quot;submit&quot; class=&quot;pure-button pure-button-primary button-success&quot;&gt;Login&lt;/button&gt;</span></span><br><span class="line"><span class="string">            &lt;/fieldset&gt;</span></span><br><span class="line"><span class="string">        &lt;/form&gt;</span></span><br><span class="line"><span class="string">EOF</span>;</span><br><span class="line">    <span class="keyword">die</span>();</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="variable">$points</span> = <span class="title function_ invoke__">my_point</span>();</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(<span class="variable">$points</span> == <span class="number">1337</span>)&#123;</span><br><span class="line">    <span class="title function_ invoke__">user_log</span>(<span class="string">&#x27;winner&#x27;</span>);</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">&quot;&lt;h3&gt;Well played, we will give you a reward soon.&lt;/h3&gt;&quot;</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="keyword">echo</span> <span class="string">&lt;&lt;&lt;EOF</span></span><br><span class="line"><span class="string">    &lt;h1&gt;Hello &lt;a href=&#x27;?action=logout&#x27;&gt;<span class="subst">&#123;$_SESSION[&#x27;user&#x27;]&#125;</span>&lt;/a&gt;&lt;/h1&gt;</span></span><br><span class="line"><span class="string">    &lt;h2&gt;You got <span class="subst">&#123;$points&#125;</span> points&lt;/h2&gt;</span></span><br><span class="line"><span class="string">    &lt;form method=GET class=&quot;grid-panel pure-form-aligned pure-form&quot;&gt;</span></span><br><span class="line"><span class="string">                    &lt;div class=&quot;bet-control pure-control-group&quot;&gt;</span></span><br><span class="line"><span class="string">                        &lt;label for=&quot;bet-input&quot;&gt;</span></span><br><span class="line"><span class="string">                            Your bet</span></span><br><span class="line"><span class="string">                        &lt;/label&gt;</span></span><br><span class="line"><span class="string">                        &lt;input name=&quot;bet&quot; id=&quot;bet-input&quot; data-content=&quot;bet-input&quot;</span></span><br><span class="line"><span class="string">                               type=&quot;number&quot; min=&quot;0&quot; max=&quot;16&quot; value=1&gt;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">                    &lt;/div&gt;</span></span><br><span class="line"><span class="string">    </span></span><br><span class="line"><span class="string">                    &lt;div class=&quot;guess-control pure-control-group&quot;&gt;</span></span><br><span class="line"><span class="string">                        &lt;label for=&quot;guess-input&quot;&gt;</span></span><br><span class="line"><span class="string">                            Your guess</span></span><br><span class="line"><span class="string">                        &lt;/label&gt;</span></span><br><span class="line"><span class="string">                        &lt;input name=&quot;guess&quot; id=&quot;guess-input&quot; data-content=&#x27;guess-input&#x27;</span></span><br><span class="line"><span class="string">                               type=&quot;number&quot; min=&quot;0&quot; value=1&gt;</span></span><br><span class="line"><span class="string">                    &lt;/div&gt;</span></span><br><span class="line"><span class="string">        &lt;button type=&quot;submit&quot; class=&quot;pure-button pure-button-primary button-error&quot;&gt;Place&lt;/button&gt;</span></span><br><span class="line"><span class="string">    &lt;/form&gt;</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">EOF</span>;</span><br><span class="line"></span><br><span class="line"><span class="keyword">if</span>(!<span class="keyword">empty</span>(<span class="variable">$_REQUEST</span>[<span class="string">&#x27;bet&#x27;</span>]) &amp;&amp; (<span class="keyword">int</span>)<span class="variable">$_REQUEST</span>[<span class="string">&#x27;bet&#x27;</span>] &gt; <span class="number">0</span> &amp;&amp; !<span class="keyword">empty</span>(<span class="variable">$_REQUEST</span>[<span class="string">&#x27;guess&#x27;</span>]) &amp;&amp; (<span class="keyword">int</span>)<span class="variable">$_REQUEST</span>[<span class="string">&#x27;guess&#x27;</span>] &gt; <span class="number">0</span>)&#123;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">&quot;&lt;aside&gt;&quot;</span>;</span><br><span class="line">    <span class="keyword">if</span>(<span class="variable">$_REQUEST</span>[<span class="string">&#x27;bet&#x27;</span>] &gt; <span class="variable">$points</span>) <span class="keyword">die</span>(<span class="string">&quot;What?! you&#x27;re cheater!&quot;</span>);</span><br><span class="line">    <span class="variable">$number</span> = <span class="title function_ invoke__">rand</span>()%<span class="number">8</span>;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">&quot;It is...&lt;h1 style=&#x27;color:#fff&#x27;&gt;&quot;</span>.<span class="variable">$number</span>.<span class="string">&quot;&lt;/h2&gt;&lt;br /&gt;&quot;</span>;</span><br><span class="line">    <span class="keyword">if</span>( <span class="variable">$number</span> == <span class="variable">$_REQUEST</span>[<span class="string">&#x27;guess&#x27;</span>] )&#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;You won!&quot;</span>;</span><br><span class="line">        <span class="keyword">if</span>(!<span class="title function_ invoke__">update_point</span>(<span class="variable">$_REQUEST</span>[<span class="string">&#x27;bet&#x27;</span>]))</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="keyword">echo</span> <span class="string">&quot;You lost :(&quot;</span>;</span><br><span class="line">        <span class="keyword">if</span>(!<span class="title function_ invoke__">update_point</span>(-<span class="variable">$_REQUEST</span>[<span class="string">&#x27;bet&#x27;</span>]))</span><br><span class="line">            <span class="keyword">return</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">echo</span> <span class="string">&quot;&lt;/aside&gt;&quot;</span>;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="title function_ invoke__">mysqli_close</span>(<span class="variable">$link</span>);</span><br><span class="line"><span class="meta">?&gt;</span></span><br><span class="line"></span><br><span class="line">&lt;/div&gt;</span><br><span class="line">&lt;/div&gt;</span><br><span class="line">&lt;/div&gt;</span><br><span class="line">&lt;/body&gt;</span><br><span class="line">&lt;/html&gt;</span><br></pre></td></tr></table></figure>
+<p>参照<a target="_blank" rel="noopener" href="http://www.melodia.pw/">小m的Writeup</a><br>其中讲到一个trick</p>
+<blockquote>
+<p>要让<code>(int)$_REQUEST[&#39;bet&#39;] &gt; 0 </code>和<code>if($_REQUEST[&#39;bet&#39;] &gt; $points) die(&quot;What?! you&#39;re cheater!&quot;);</code>检查同时通过<br>…<br>在科学计数法字符串转换为数字时，如果 E 后面的数小于某个值会弄成 double 类型，再强制转换为 int 类型时可能会有奇妙的结果，测试发现 bet 为 1e-1000 时已经可以触发这个 bug 绕过两个检查， 使得 bet 既大于 0 又不大于 0。</p>
+</blockquote>
+<h2 id="0x01-验证"><a href="#0x01-验证" class="headerlink" title="0x01 验证"></a>0x01 验证</h2><p>命令</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">php -r &quot;var_dump((int)(&#x27;1e-1000&#x27;)&gt;0);&quot;</span><br><span class="line">php -r &quot;var_dump(&#x27;1e-1000&#x27;&gt;0);&quot;</span><br></pre></td></tr></table></figure>
+<p>结果</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Command line code:1:</span><br><span class="line">bool(true)</span><br><span class="line">Command line code:1:</span><br><span class="line">bool(false)</span><br></pre></td></tr></table></figure>
+<hr>
+<p>命令</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">php -r &quot;var_dump((int)(&#x27;1e-10&#x27;)&gt;0);&quot;</span><br><span class="line">php -r &quot;var_dump(&#x27;1e-10&#x27;&gt;0);&quot;</span><br></pre></td></tr></table></figure>
+<p>结果</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">Command line code:1:</span><br><span class="line">bool(true)</span><br><span class="line">Command line code:1:</span><br><span class="line">bool(true)</span><br></pre></td></tr></table></figure>
+<p>从这两组结果能看出这个题目的解题点在哪里了。。。</p>
+<h2 id="0x02-源码分析"><a href="#0x02-源码分析" class="headerlink" title="0x02 源码分析"></a>0x02 源码分析</h2><p>php源码版本：5.5.30<br>全局寻找<code>intval</code>函数</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//type.c line 134</span></span><br><span class="line">PHP_FUNCTION(intval)</span><br><span class="line">&#123;</span><br><span class="line">	zval **num;</span><br><span class="line">	<span class="type">long</span> arg_base;</span><br><span class="line">	<span class="type">int</span> base;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">switch</span> (ZEND_NUM_ARGS()) &#123;</span><br><span class="line">		<span class="keyword">case</span> <span class="number">1</span>:</span><br><span class="line">			<span class="keyword">if</span> (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, <span class="string">&quot;Z&quot;</span>, &amp;num) == FAILURE) &#123;</span><br><span class="line">				<span class="keyword">return</span>;</span><br><span class="line">			&#125;</span><br><span class="line">			base = <span class="number">10</span>;</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">case</span> <span class="number">2</span>:</span><br><span class="line">			<span class="keyword">if</span> (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, <span class="string">&quot;Zl&quot;</span>, &amp;num, &amp;arg_base) == FAILURE) &#123;</span><br><span class="line">				<span class="keyword">return</span>;</span><br><span class="line">			&#125;</span><br><span class="line">			base = arg_base;</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line"></span><br><span class="line">		<span class="keyword">default</span>:</span><br><span class="line">			WRONG_PARAM_COUNT;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	RETVAL_ZVAL(*num, <span class="number">1</span>, <span class="number">0</span>);</span><br><span class="line">	convert_to_long_base(return_value, base);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>当参数只有一个的时候，默认使用10进制转换，最后进入<code>convert_to_long_base</code>函数来转换<br>下面是这个函数的实现</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br></pre></td><td class="code"><pre><span class="line">ZEND_API <span class="type">void</span> <span class="title function_">convert_to_long_base</span><span class="params">(zval *op, <span class="type">int</span> base)</span> <span class="comment">/* &#123;&#123;&#123; */</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">long</span> tmp;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">switch</span> (Z_TYPE_P(op)) &#123;</span><br><span class="line">		<span class="keyword">case</span> IS_NULL:</span><br><span class="line">			Z_LVAL_P(op) = <span class="number">0</span>;</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		<span class="keyword">case</span> IS_RESOURCE: &#123;</span><br><span class="line">				TSRMLS_FETCH();</span><br><span class="line"></span><br><span class="line">				zend_list_delete(Z_LVAL_P(op));</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="comment">/* break missing intentionally */</span></span><br><span class="line">		<span class="keyword">case</span> IS_BOOL:</span><br><span class="line">		<span class="keyword">case</span> IS_LONG:</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		<span class="keyword">case</span> IS_DOUBLE:</span><br><span class="line">			Z_LVAL_P(op) = zend_dval_to_lval(Z_DVAL_P(op));</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		<span class="keyword">case</span> IS_STRING:</span><br><span class="line">			&#123;</span><br><span class="line">				<span class="type">char</span> *strval = Z_STRVAL_P(op);</span><br><span class="line"></span><br><span class="line">				Z_LVAL_P(op) = strtol(strval, <span class="literal">NULL</span>, base);</span><br><span class="line">				STR_FREE(strval);</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		<span class="keyword">case</span> IS_ARRAY:</span><br><span class="line">			tmp = (zend_hash_num_elements(Z_ARRVAL_P(op))?<span class="number">1</span>:<span class="number">0</span>);</span><br><span class="line">			zval_dtor(op);</span><br><span class="line">			Z_LVAL_P(op) = tmp;</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		<span class="keyword">case</span> IS_OBJECT:</span><br><span class="line">			&#123;</span><br><span class="line">				<span class="type">int</span> retval = <span class="number">1</span>;</span><br><span class="line">				TSRMLS_FETCH();</span><br><span class="line"></span><br><span class="line">				convert_object_to_type(op, IS_LONG, convert_to_long);</span><br><span class="line"></span><br><span class="line">				<span class="keyword">if</span> (Z_TYPE_P(op) == IS_LONG) &#123;</span><br><span class="line">					<span class="keyword">return</span>;</span><br><span class="line">				&#125;</span><br><span class="line">				zend_error(E_NOTICE, <span class="string">&quot;Object of class %s could not be converted to int&quot;</span>, Z_OBJCE_P(op)-&gt;name);</span><br><span class="line"></span><br><span class="line">				zval_dtor(op);</span><br><span class="line">				ZVAL_LONG(op, retval);</span><br><span class="line">				<span class="keyword">return</span>;</span><br><span class="line">			&#125;</span><br><span class="line">		<span class="keyword">default</span>:</span><br><span class="line">			zend_error(E_WARNING, <span class="string">&quot;Cannot convert to ordinal value&quot;</span>);</span><br><span class="line">			zval_dtor(op);</span><br><span class="line">			Z_LVAL_P(op) = <span class="number">0</span>;</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">	&#125;</span><br><span class="line">    </span><br><span class="line">	Z_TYPE_P(op) = IS_LONG;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>因为我们传入的是字符串类型，所以注意以下代码</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line">···</span><br><span class="line">		<span class="keyword">case</span> IS_STRING:</span><br><span class="line">			&#123;</span><br><span class="line">				<span class="type">char</span> *strval = Z_STRVAL_P(op);</span><br><span class="line"></span><br><span class="line">				Z_LVAL_P(op) = strtol(strval, <span class="literal">NULL</span>, base);</span><br><span class="line">				STR_FREE(strval);</span><br><span class="line">			&#125;</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">···</span><br></pre></td></tr></table></figure>
+<p>最后整数数值由函数<code>strtol</code>来转换，<code>strval</code>是传入的字符数组，<code>base</code>是进制<br>由于这个函数不考虑科学计数法，遇到<code>e</code>直接<code>break</code>，所以返回值被截断成1<br>至此，这个trick大概清楚了~</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Appl3s</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://example.com/2017/06/07/php-trick/">http://example.com/2017/06/07/php-trick/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2025 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>Do you believe in <strong>DESTINY</strong>?</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/trick/"># trick</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/06/07/appl3-s-determination/">入坑启事</a>
+            
+            
+            <a class="next" rel="next" href="/2017/06/07/rsa-algorithm-principle/">RSA 算法原理</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Appl3s | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Appl3s">
+
+
+
+
+
+<title>哈希长度扩展攻击 | Appl3s的博客</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Appl3s&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Appl3s&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">哈希长度扩展攻击</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Appl3s</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">May 23, 2017&nbsp;&nbsp;8:17:56</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="0x00-HashPump"><a href="#0x00-HashPump" class="headerlink" title="0x00 HashPump"></a>0x00 HashPump</h2><p>使用hashpump工具来计算哈希长度</p>
+<span id="more"></span>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"># hashpump</span><br><span class="line">Input Signature: 01649f73c951000fae95e345a7fb2a53</span><br><span class="line">Input Data: 123456</span><br><span class="line">Input Key Length: 6</span><br><span class="line">Input Data to Add: 789</span><br></pre></td></tr></table></figure>
+
+<h2 id="0x01-python脚本"><a href="#0x01-python脚本" class="headerlink" title="0x01 python脚本"></a>0x01 python脚本</h2><p>my_md5.py</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br><span class="line">182</span><br><span class="line">183</span><br><span class="line">184</span><br><span class="line">185</span><br><span class="line">186</span><br><span class="line">187</span><br><span class="line">188</span><br><span class="line">189</span><br><span class="line">190</span><br><span class="line">191</span><br><span class="line">192</span><br><span class="line">193</span><br><span class="line">194</span><br><span class="line">195</span><br><span class="line">196</span><br><span class="line">197</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> sys</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">genMsgLengthDescriptor</span>(<span class="params">msg_bitsLenth</span>):</span><br><span class="line">    <span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">    ---args:</span></span><br><span class="line"><span class="string">            msg_bitsLenth : the bits length of raw message</span></span><br><span class="line"><span class="string">    --return:</span></span><br><span class="line"><span class="string">            16 hex-encoded string , i.e.64bits,8bytes which used to describe the bits length of raw message added after padding</span></span><br><span class="line"><span class="string">    &#x27;&#x27;&#x27;</span></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">__import__</span>(<span class="string">&quot;struct&quot;</span>).pack(<span class="string">&quot;&gt;Q&quot;</span>,msg_bitsLenth).encode(<span class="string">&quot;hex&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">reverse_hex_8bytes</span>(<span class="params">hex_str</span>):</span><br><span class="line">    <span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">    --args:</span></span><br><span class="line"><span class="string">            hex_str: a hex-encoded string with length 16 , i.e.8bytes</span></span><br><span class="line"><span class="string">    --return:</span></span><br><span class="line"><span class="string">            transform raw message descriptor to little-endian</span></span><br><span class="line"><span class="string">    &#x27;&#x27;&#x27;</span></span><br><span class="line">    hex_str = <span class="string">&quot;%016x&quot;</span>%<span class="built_in">int</span>(hex_str,<span class="number">16</span>)</span><br><span class="line">    <span class="keyword">assert</span> <span class="built_in">len</span>(hex_str)==<span class="number">16</span></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">__import__</span>(<span class="string">&quot;struct&quot;</span>).pack(<span class="string">&quot;&lt;Q&quot;</span>,<span class="built_in">int</span>(hex_str,<span class="number">16</span>)).encode(<span class="string">&quot;hex&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">reverse_hex_4bytes</span>(<span class="params">hex_str</span>):</span><br><span class="line">    <span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">    --args:</span></span><br><span class="line"><span class="string">            hex_str: a hex-encoded string with length 8 , i.e.4bytes</span></span><br><span class="line"><span class="string">    --return:</span></span><br><span class="line"><span class="string">            transform 4 bytes message block to little-endian</span></span><br><span class="line"><span class="string">    &#x27;&#x27;&#x27;</span></span><br><span class="line">    hex_str = <span class="string">&quot;%08x&quot;</span>%<span class="built_in">int</span>(hex_str,<span class="number">16</span>)</span><br><span class="line">    <span class="keyword">assert</span> <span class="built_in">len</span>(hex_str)==<span class="number">8</span></span><br><span class="line">    <span class="keyword">return</span> <span class="built_in">__import__</span>(<span class="string">&quot;struct&quot;</span>).pack(<span class="string">&quot;&lt;L&quot;</span>,<span class="built_in">int</span>(hex_str,<span class="number">16</span>)).encode(<span class="string">&quot;hex&quot;</span>)</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">deal_rawInputMsg</span>(<span class="params">input_msg</span>):</span><br><span class="line">    <span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">    --args:</span></span><br><span class="line"><span class="string">            input_msg : inputed a ascii-encoded string</span></span><br><span class="line"><span class="string">    --return:</span></span><br><span class="line"><span class="string">            a hex-encoded string which can be inputed to mathematical transformation function.</span></span><br><span class="line"><span class="string">    &#x27;&#x27;&#x27;</span></span><br><span class="line">    ascii_list = [x.encode(<span class="string">&quot;hex&quot;</span>) <span class="keyword">for</span> x <span class="keyword">in</span> input_msg]</span><br><span class="line">    length_msg_bytes = <span class="built_in">len</span>(ascii_list)</span><br><span class="line">    length_msg_bits = <span class="built_in">len</span>(ascii_list)*<span class="number">8</span></span><br><span class="line">    <span class="comment">#padding</span></span><br><span class="line">    ascii_list.append(<span class="string">&#x27;80&#x27;</span>)</span><br><span class="line">    <span class="keyword">while</span> (<span class="built_in">len</span>(ascii_list)*<span class="number">8</span>+<span class="number">64</span>)%<span class="number">512</span> != <span class="number">0</span>:</span><br><span class="line">        ascii_list.append(<span class="string">&#x27;00&#x27;</span>)</span><br><span class="line">    <span class="comment">#add Descriptor</span></span><br><span class="line">    ascii_list.append(reverse_hex_8bytes(genMsgLengthDescriptor(length_msg_bits)))</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;&quot;</span>.join(ascii_list)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">getM16</span>(<span class="params">hex_str,operatingBlockNum</span>):</span><br><span class="line">    <span class="string">&#x27;&#x27;&#x27;</span></span><br><span class="line"><span class="string">    --args:</span></span><br><span class="line"><span class="string">            hex_str : a hex-encoded string with length in integral multiple of 512bits</span></span><br><span class="line"><span class="string">            operatingBlockNum : message block number which is being operated , greater than 1</span></span><br><span class="line"><span class="string">    --return:</span></span><br><span class="line"><span class="string">            M : result of splited 64bytes into 4*16 message blocks with little-endian</span></span><br><span class="line"><span class="string"></span></span><br><span class="line"><span class="string">    &#x27;&#x27;&#x27;</span></span><br><span class="line">    M = [<span class="built_in">int</span>(reverse_hex_4bytes(hex_str[i:(i+<span class="number">8</span>)]),<span class="number">16</span>) <span class="keyword">for</span> i <span class="keyword">in</span> xrange(<span class="number">128</span>*(operatingBlockNum-<span class="number">1</span>),<span class="number">128</span>*operatingBlockNum,<span class="number">8</span>)]</span><br><span class="line">    <span class="keyword">return</span> M</span><br><span class="line"></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">T</span>(<span class="params">i</span>):</span><br><span class="line">    result = (<span class="built_in">int</span>(<span class="number">4294967296</span>*<span class="built_in">abs</span>(<span class="built_in">__import__</span>(<span class="string">&quot;math&quot;</span>).sin(i))))&amp;<span class="number">0xffffffff</span></span><br><span class="line">    <span class="keyword">return</span> result</span><br><span class="line"></span><br><span class="line">F = <span class="keyword">lambda</span> x,y,z:((x&amp;y)|((~x)&amp;z))</span><br><span class="line">G = <span class="keyword">lambda</span> x,y,z:((x&amp;z)|(y&amp;(~z)))</span><br><span class="line">H = <span class="keyword">lambda</span> x,y,z:(x^y^z)</span><br><span class="line">I = <span class="keyword">lambda</span> x,y,z:(y^(x|(~z)))</span><br><span class="line">RL = L = <span class="keyword">lambda</span> x,n:(((x&lt;&lt;n)|(x&gt;&gt;(<span class="number">32</span>-n)))&amp;(<span class="number">0xffffffff</span>))</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">FF</span>(<span class="params">a, b, c, d, x, s, ac</span>):</span><br><span class="line">    a = (a+F ((b), (c), (d)) + (x) + (ac)&amp;<span class="number">0xffffffff</span>)&amp;<span class="number">0xffffffff</span>;</span><br><span class="line">    a = RL ((a), (s))&amp;<span class="number">0xffffffff</span>;</span><br><span class="line">    a = (a+b)&amp;<span class="number">0xffffffff</span></span><br><span class="line">    <span class="keyword">return</span> a</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">GG</span>(<span class="params">a, b, c, d, x, s, ac</span>):</span><br><span class="line">    a = (a+G ((b), (c), (d)) + (x) + (ac)&amp;<span class="number">0xffffffff</span>)&amp;<span class="number">0xffffffff</span>;</span><br><span class="line">    a = RL ((a), (s))&amp;<span class="number">0xffffffff</span>;</span><br><span class="line">    a = (a+b)&amp;<span class="number">0xffffffff</span></span><br><span class="line">    <span class="keyword">return</span> a</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">HH</span>(<span class="params">a, b, c, d, x, s, ac</span>):</span><br><span class="line">    a = (a+H ((b), (c), (d)) + (x) + (ac)&amp;<span class="number">0xffffffff</span>)&amp;<span class="number">0xffffffff</span>;</span><br><span class="line">    a = RL ((a), (s))&amp;<span class="number">0xffffffff</span>;</span><br><span class="line">    a = (a+b)&amp;<span class="number">0xffffffff</span></span><br><span class="line">    <span class="keyword">return</span> a</span><br><span class="line"><span class="keyword">def</span> <span class="title function_">II</span>(<span class="params">a, b, c, d, x, s, ac</span>):</span><br><span class="line">    a = (a+I ((b), (c), (d)) + (x) + (ac)&amp;<span class="number">0xffffffff</span>)&amp;<span class="number">0xffffffff</span>;</span><br><span class="line">    a = RL ((a), (s))&amp;<span class="number">0xffffffff</span>;</span><br><span class="line">    a = (a+b)&amp;<span class="number">0xffffffff</span></span><br><span class="line">    <span class="keyword">return</span> a</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">show_md5</span>(<span class="params">A,B,C,D</span>):</span><br><span class="line">    <span class="keyword">return</span> <span class="string">&quot;&quot;</span>.join( [  <span class="string">&quot;&quot;</span>.join(<span class="built_in">__import__</span>(<span class="string">&quot;re&quot;</span>).findall(<span class="string">r&quot;..&quot;</span>,<span class="string">&quot;%08x&quot;</span>%i)[::-<span class="number">1</span>]) <span class="keyword">for</span> i <span class="keyword">in</span> (A,B,C,D)  ]  )</span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">run_md5</span>(<span class="params">A=<span class="number">0x67452301</span>,B=<span class="number">0xefcdab89</span>,C=<span class="number">0x98badcfe</span>,D=<span class="number">0x10325476</span>,readyMsg=<span class="string">&quot;&quot;</span></span>):</span><br><span class="line"></span><br><span class="line">    a = A</span><br><span class="line">    b = B</span><br><span class="line">    c = C</span><br><span class="line">    d = D</span><br><span class="line"></span><br><span class="line">    <span class="keyword">for</span> i <span class="keyword">in</span> xrange(<span class="number">0</span>,<span class="built_in">len</span>(readyMsg)/<span class="number">128</span>):</span><br><span class="line">        M = getM16(readyMsg,i+<span class="number">1</span>)</span><br><span class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> xrange(<span class="number">16</span>):</span><br><span class="line">            <span class="built_in">exec</span> <span class="string">&quot;M&quot;</span>+<span class="built_in">str</span>(i)+<span class="string">&quot;=M[&quot;</span>+<span class="built_in">str</span>(i)+<span class="string">&quot;]&quot;</span></span><br><span class="line">        <span class="comment">#First round</span></span><br><span class="line">        a=FF(a,b,c,d,M0,<span class="number">7</span>,<span class="number">0xd76aa478L</span>)</span><br><span class="line">        d=FF(d,a,b,c,M1,<span class="number">12</span>,<span class="number">0xe8c7b756L</span>)</span><br><span class="line">        c=FF(c,d,a,b,M2,<span class="number">17</span>,<span class="number">0x242070dbL</span>)</span><br><span class="line">        b=FF(b,c,d,a,M3,<span class="number">22</span>,<span class="number">0xc1bdceeeL</span>)</span><br><span class="line">        a=FF(a,b,c,d,M4,<span class="number">7</span>,<span class="number">0xf57c0fafL</span>)</span><br><span class="line">        d=FF(d,a,b,c,M5,<span class="number">12</span>,<span class="number">0x4787c62aL</span>)</span><br><span class="line">        c=FF(c,d,a,b,M6,<span class="number">17</span>,<span class="number">0xa8304613L</span>)</span><br><span class="line">        b=FF(b,c,d,a,M7,<span class="number">22</span>,<span class="number">0xfd469501L</span>)</span><br><span class="line">        a=FF(a,b,c,d,M8,<span class="number">7</span>,<span class="number">0x698098d8L</span>)</span><br><span class="line">        d=FF(d,a,b,c,M9,<span class="number">12</span>,<span class="number">0x8b44f7afL</span>)</span><br><span class="line">        c=FF(c,d,a,b,M10,<span class="number">17</span>,<span class="number">0xffff5bb1L</span>)</span><br><span class="line">        b=FF(b,c,d,a,M11,<span class="number">22</span>,<span class="number">0x895cd7beL</span>)</span><br><span class="line">        a=FF(a,b,c,d,M12,<span class="number">7</span>,<span class="number">0x6b901122L</span>)</span><br><span class="line">        d=FF(d,a,b,c,M13,<span class="number">12</span>,<span class="number">0xfd987193L</span>)</span><br><span class="line">        c=FF(c,d,a,b,M14,<span class="number">17</span>,<span class="number">0xa679438eL</span>)</span><br><span class="line">        b=FF(b,c,d,a,M15,<span class="number">22</span>,<span class="number">0x49b40821L</span>)</span><br><span class="line">        <span class="comment">#Second round</span></span><br><span class="line">        a=GG(a,b,c,d,M1,<span class="number">5</span>,<span class="number">0xf61e2562L</span>)</span><br><span class="line">        d=GG(d,a,b,c,M6,<span class="number">9</span>,<span class="number">0xc040b340L</span>)</span><br><span class="line">        c=GG(c,d,a,b,M11,<span class="number">14</span>,<span class="number">0x265e5a51L</span>)</span><br><span class="line">        b=GG(b,c,d,a,M0,<span class="number">20</span>,<span class="number">0xe9b6c7aaL</span>)</span><br><span class="line">        a=GG(a,b,c,d,M5,<span class="number">5</span>,<span class="number">0xd62f105dL</span>)</span><br><span class="line">        d=GG(d,a,b,c,M10,<span class="number">9</span>,<span class="number">0x02441453L</span>)</span><br><span class="line">        c=GG(c,d,a,b,M15,<span class="number">14</span>,<span class="number">0xd8a1e681L</span>)</span><br><span class="line">        b=GG(b,c,d,a,M4,<span class="number">20</span>,<span class="number">0xe7d3fbc8L</span>)</span><br><span class="line">        a=GG(a,b,c,d,M9,<span class="number">5</span>,<span class="number">0x21e1cde6L</span>)</span><br><span class="line">        d=GG(d,a,b,c,M14,<span class="number">9</span>,<span class="number">0xc33707d6L</span>)</span><br><span class="line">        c=GG(c,d,a,b,M3,<span class="number">14</span>,<span class="number">0xf4d50d87L</span>)</span><br><span class="line">        b=GG(b,c,d,a,M8,<span class="number">20</span>,<span class="number">0x455a14edL</span>)</span><br><span class="line">        a=GG(a,b,c,d,M13,<span class="number">5</span>,<span class="number">0xa9e3e905L</span>)</span><br><span class="line">        d=GG(d,a,b,c,M2,<span class="number">9</span>,<span class="number">0xfcefa3f8L</span>)</span><br><span class="line">        c=GG(c,d,a,b,M7,<span class="number">14</span>,<span class="number">0x676f02d9L</span>)</span><br><span class="line">        b=GG(b,c,d,a,M12,<span class="number">20</span>,<span class="number">0x8d2a4c8aL</span>)</span><br><span class="line">        <span class="comment">#Third round</span></span><br><span class="line">        a=HH(a,b,c,d,M5,<span class="number">4</span>,<span class="number">0xfffa3942L</span>)</span><br><span class="line">        d=HH(d,a,b,c,M8,<span class="number">11</span>,<span class="number">0x8771f681L</span>)</span><br><span class="line">        c=HH(c,d,a,b,M11,<span class="number">16</span>,<span class="number">0x6d9d6122L</span>)</span><br><span class="line">        b=HH(b,c,d,a,M14,<span class="number">23</span>,<span class="number">0xfde5380c</span>)</span><br><span class="line">        a=HH(a,b,c,d,M1,<span class="number">4</span>,<span class="number">0xa4beea44L</span>)</span><br><span class="line">        d=HH(d,a,b,c,M4,<span class="number">11</span>,<span class="number">0x4bdecfa9L</span>)</span><br><span class="line">        c=HH(c,d,a,b,M7,<span class="number">16</span>,<span class="number">0xf6bb4b60L</span>)</span><br><span class="line">        b=HH(b,c,d,a,M10,<span class="number">23</span>,<span class="number">0xbebfbc70L</span>)</span><br><span class="line">        a=HH(a,b,c,d,M13,<span class="number">4</span>,<span class="number">0x289b7ec6L</span>)</span><br><span class="line">        d=HH(d,a,b,c,M0,<span class="number">11</span>,<span class="number">0xeaa127faL</span>)</span><br><span class="line">        c=HH(c,d,a,b,M3,<span class="number">16</span>,<span class="number">0xd4ef3085L</span>)</span><br><span class="line">        b=HH(b,c,d,a,M6,<span class="number">23</span>,<span class="number">0x04881d05L</span>)</span><br><span class="line">        a=HH(a,b,c,d,M9,<span class="number">4</span>,<span class="number">0xd9d4d039L</span>)</span><br><span class="line">        d=HH(d,a,b,c,M12,<span class="number">11</span>,<span class="number">0xe6db99e5L</span>)</span><br><span class="line">        c=HH(c,d,a,b,M15,<span class="number">16</span>,<span class="number">0x1fa27cf8L</span>)</span><br><span class="line">        b=HH(b,c,d,a,M2,<span class="number">23</span>,<span class="number">0xc4ac5665L</span>)</span><br><span class="line">        <span class="comment">#Fourth round</span></span><br><span class="line">        a=II(a,b,c,d,M0,<span class="number">6</span>,<span class="number">0xf4292244L</span>)</span><br><span class="line">        d=II(d,a,b,c,M7,<span class="number">10</span>,<span class="number">0x432aff97L</span>)</span><br><span class="line">        c=II(c,d,a,b,M14,<span class="number">15</span>,<span class="number">0xab9423a7L</span>)</span><br><span class="line">        b=II(b,c,d,a,M5,<span class="number">21</span>,<span class="number">0xfc93a039L</span>)</span><br><span class="line">        a=II(a,b,c,d,M12,<span class="number">6</span>,<span class="number">0x655b59c3L</span>)</span><br><span class="line">        d=II(d,a,b,c,M3,<span class="number">10</span>,<span class="number">0x8f0ccc92L</span>)</span><br><span class="line">        c=II(c,d,a,b,M10,<span class="number">15</span>,<span class="number">0xffeff47dL</span>)</span><br><span class="line">        b=II(b,c,d,a,M1,<span class="number">21</span>,<span class="number">0x85845dd1L</span>)</span><br><span class="line">        a=II(a,b,c,d,M8,<span class="number">6</span>,<span class="number">0x6fa87e4fL</span>)</span><br><span class="line">        d=II(d,a,b,c,M15,<span class="number">10</span>,<span class="number">0xfe2ce6e0L</span>)</span><br><span class="line">        c=II(c,d,a,b,M6,<span class="number">15</span>,<span class="number">0xa3014314L</span>)</span><br><span class="line">        b=II(b,c,d,a,M13,<span class="number">21</span>,<span class="number">0x4e0811a1L</span>)</span><br><span class="line">        a=II(a,b,c,d,M4,<span class="number">6</span>,<span class="number">0xf7537e82L</span>)</span><br><span class="line">        d=II(d,a,b,c,M11,<span class="number">10</span>,<span class="number">0xbd3af235L</span>)</span><br><span class="line">        c=II(c,d,a,b,M2,<span class="number">15</span>,<span class="number">0x2ad7d2bbL</span>)</span><br><span class="line">        b=II(b,c,d,a,M9,<span class="number">21</span>,<span class="number">0xeb86d391L</span>)</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">        A += a</span><br><span class="line">        B += b</span><br><span class="line">        C += c</span><br><span class="line">        D += d</span><br><span class="line"></span><br><span class="line">        A = A&amp;<span class="number">0xffffffff</span></span><br><span class="line">        B = B&amp;<span class="number">0xffffffff</span></span><br><span class="line">        C = C&amp;<span class="number">0xffffffff</span></span><br><span class="line">        D = D&amp;<span class="number">0xffffffff</span></span><br><span class="line"></span><br><span class="line">        a = A</span><br><span class="line">        b = B</span><br><span class="line">        c = C</span><br><span class="line">        d = D</span><br><span class="line">        <span class="comment">#print &quot;%x,%x,%x,%x&quot;%(a,b,c,d)</span></span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> show_md5(a,b,c,d)</span><br></pre></td></tr></table></figure>
+<p>main.py </p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">import</span> my_md5</span><br><span class="line"><span class="keyword">import</span> binascii</span><br><span class="line"></span><br><span class="line">secret_len=<span class="number">6</span><span class="comment">#first</span></span><br><span class="line">ming=<span class="string">&quot;123456&quot;</span><span class="comment">#second</span></span><br><span class="line">data=<span class="string">&quot;789&quot;</span><span class="comment">#third</span></span><br><span class="line">hsh=<span class="string">&quot;01649f73c951000fae95e345a7fb2a53&quot;</span><span class="comment">#bxs666123456</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">def</span> <span class="title function_">md5</span>(<span class="params"><span class="built_in">str</span></span>):</span><br><span class="line">    <span class="keyword">import</span> hashlib</span><br><span class="line">    m = hashlib.md5()</span><br><span class="line">    m.update(<span class="built_in">str</span>)</span><br><span class="line">    <span class="keyword">return</span> m.hexdigest()</span><br><span class="line"></span><br><span class="line">s=[]</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,<span class="number">32</span>,<span class="number">8</span>):</span><br><span class="line">    tmp=<span class="string">&quot;0x&quot;</span></span><br><span class="line">    <span class="keyword">for</span> j <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">0</span>,-<span class="number">10</span>,-<span class="number">2</span>):</span><br><span class="line">        tmp+=hsh[i:i+<span class="number">8</span>][<span class="number">8</span>+j:<span class="number">10</span>+j]</span><br><span class="line">    s.append(tmp)</span><br><span class="line"><span class="built_in">print</span> <span class="string">&quot;the vector is:&quot;</span>,s</span><br><span class="line"></span><br><span class="line">secret=<span class="string">&quot;a&quot;</span>*secret_len</span><br><span class="line"></span><br><span class="line"><span class="comment">#append to 64 bytes</span></span><br><span class="line">res=my_md5.deal_rawInputMsg(secret+ming)</span><br><span class="line"></span><br><span class="line"><span class="comment">#append to 128 bytes</span></span><br><span class="line">r=my_md5.deal_rawInputMsg(binascii.unhexlify(res)+data)</span><br><span class="line"><span class="built_in">print</span> <span class="string">&quot;the full code:&quot;</span>+r</span><br><span class="line">inp = r[<span class="built_in">len</span>(r)/<span class="number">2</span>:]</span><br><span class="line"><span class="built_in">print</span> <span class="string">&quot;the second part:&quot;</span>+inp</span><br><span class="line"><span class="built_in">print</span> <span class="string">&quot;md5:&quot;</span>+my_md5.run_md5(<span class="built_in">eval</span>(s[<span class="number">0</span>]),<span class="built_in">eval</span>(s[<span class="number">1</span>]),<span class="built_in">eval</span>(s[<span class="number">2</span>]),<span class="built_in">eval</span>(s[<span class="number">3</span>]),inp)</span><br><span class="line"><span class="built_in">print</span> <span class="string">&quot;true:&quot;</span>+md5(<span class="string">&#x27;bxs666&#x27;</span>+binascii.unhexlify(res[secret_len*<span class="number">2</span>:])+data) </span><br><span class="line"><span class="built_in">print</span> <span class="string">&#x27;bxs666&#x27;</span>+binascii.unhexlify(res[secret_len*<span class="number">2</span>:])+data</span><br></pre></td></tr></table></figure>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Appl3s</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://example.com/2017/05/23/hash-length-extension-attack/">http://example.com/2017/05/23/hash-length-extension-attack/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2025 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>Do you believe in <strong>DESTINY</strong>?</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/crypto/"># crypto</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/06/06/cuit-writeup/">胖哈勃杯第十三届CUIT校赛writeup</a>
+            
+            
+            <a class="next" rel="next" href="/2016/12/20/phpext/">PHP extension调用so库</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Appl3s | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

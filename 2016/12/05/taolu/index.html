@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Appl3s">
+
+
+
+
+
+<title>Android动态调试中的套路 | Appl3s的博客</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Appl3s&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Appl3s&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">Android动态调试中的套路</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Appl3s</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">December 5, 2016&nbsp;&nbsp;14:52:15</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <blockquote>
+<p>因为兴趣广泛，我也做过一段时间的安卓开发，加之团队里的老司机们不是很熟练Android的动态调试，所以我总结一下现阶段我所使用的<strong>套路</strong>(～￣▽￣)～</p>
+</blockquote>
+<span id="more"></span>
+<p><img src="http://www.bxsteam.xyz/wp-content/uploads/2016/12/taolu.jpg" alt="taolu"></p>
+<h2 id="0x00-资源准备"><a href="#0x00-资源准备" class="headerlink" title="0x00 资源准备"></a>0x00 资源准备</h2><ul>
+<li>Android开发环境<ul>
+<li>Java环境（JDK） </li>
+<li>Android Studio</li>
+<li>ADT</li>
+<li>Smalidea插件</li>
+</ul>
+</li>
+<li>反编译工具<ul>
+<li>apktool</li>
+<li>dex2jar 反编译classes.dex</li>
+<li>jd-gui.exe 查看反编译的源代码</li>
+<li>jeb反编译套件(可选)</li>
+</ul>
+</li>
+</ul>
+<h2 id="0x01-举个栗子"><a href="#0x01-举个栗子" class="headerlink" title="0x01 举个栗子"></a>0x01 举个栗子</h2><p>熟悉安卓的dalao们晓得，apk其实就是一个zip压缩包，所以我们完全可以直接解压它</p>
+<blockquote>
+<p>我电脑装了2345好压，为给后面的批处理做铺垫，所以使用了好压自带的解压命令</p>
+</blockquote>
+<p>这个题目来自于suctf-&gt;<a target="_blank" rel="noopener" href="http://www.bxsteam.xyz/wp-content/uploads/2016/12/Naive.zip">Naive.apk</a></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">HaoZipc x Naive.apk -aoa -o CrackMe <span class="comment">#将apk文件解压至目标文件夹</span></span><br></pre></td></tr></table></figure>
+<p>接下来，我们使用apktool工具反编译</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">cd</span> Naive</span><br><span class="line">apktool d ../Naive.apk -o xml -f <span class="comment">#把这个apk文件进行反编译，目标文件夹xml</span></span><br><span class="line">d2j-dex2jar classes.dex</span><br></pre></td></tr></table></figure>
+<p>运行<code>jd-gui.exe</code>打开classes-dex2jar.jar就可以看到源代码了<br>其中类MainActivity</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">package</span> com.suctf.naive;</span><br><span class="line"></span><br><span class="line"><span class="keyword">import</span> android.os.Bundle;</span><br><span class="line"><span class="keyword">import</span> android.support.v7.app.AppCompatActivity;</span><br><span class="line"><span class="keyword">import</span> android.view.View;</span><br><span class="line"><span class="keyword">import</span> android.view.View.OnClickListener;</span><br><span class="line"><span class="keyword">import</span> android.widget.Button;</span><br><span class="line"><span class="keyword">import</span> android.widget.EditText;</span><br><span class="line"><span class="keyword">import</span> android.widget.TextView;</span><br><span class="line"><span class="keyword">import</span> android.widget.Toast;</span><br><span class="line"></span><br><span class="line"><span class="keyword">public</span> <span class="keyword">class</span> <span class="title class_">MainActivity</span> <span class="keyword">extends</span> <span class="title class_">AppCompatActivity</span></span><br><span class="line">&#123;</span><br><span class="line">  Button btn;</span><br><span class="line">  EditText flagText;</span><br><span class="line">  TextView hint;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">static</span></span><br><span class="line">  &#123;</span><br><span class="line">    System.loadLibrary(<span class="string">&quot;native-lib&quot;</span>);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">native</span> String <span class="title function_">getFlag</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">public</span> <span class="keyword">native</span> String <span class="title function_">getHint</span><span class="params">()</span>;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">protected</span> <span class="keyword">void</span> <span class="title function_">onCreate</span><span class="params">(Bundle paramBundle)</span></span><br><span class="line">  &#123;</span><br><span class="line">    <span class="built_in">super</span>.onCreate(paramBundle);</span><br><span class="line">    setContentView(<span class="number">2130968601</span>);</span><br><span class="line">    <span class="built_in">this</span>.hint = ((TextView)findViewById(<span class="number">2131492945</span>));</span><br><span class="line">    <span class="built_in">this</span>.hint.setText(getHint());</span><br><span class="line">    <span class="built_in">this</span>.btn = ((Button)findViewById(<span class="number">2131492947</span>));</span><br><span class="line">    <span class="built_in">this</span>.flagText = ((EditText)findViewById(<span class="number">2131492946</span>));</span><br><span class="line">    <span class="built_in">this</span>.btn.setOnClickListener(<span class="keyword">new</span> <span class="title class_">View</span>.OnClickListener()</span><br><span class="line">    &#123;</span><br><span class="line">      <span class="keyword">public</span> <span class="keyword">void</span> <span class="title function_">onClick</span><span class="params">(View paramAnonymousView)</span></span><br><span class="line">      &#123;</span><br><span class="line">        <span class="keyword">if</span> (MainActivity.<span class="built_in">this</span>.getFlag().equals(MainActivity.<span class="built_in">this</span>.flagText.getText().toString()))</span><br><span class="line">        &#123;</span><br><span class="line">          Toast.makeText(MainActivity.<span class="built_in">this</span>.getApplicationContext(), MainActivity.<span class="built_in">this</span>.getFlag(), <span class="number">1</span>).show();</span><br><span class="line">          <span class="keyword">return</span>;</span><br><span class="line">        &#125;</span><br><span class="line">        Toast.makeText(MainActivity.<span class="built_in">this</span>.getApplicationContext(), <span class="string">&quot;Wrong!&quot;</span>, <span class="number">1</span>).show();</span><br><span class="line">      &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>阅读代码，我们可以得到一些信息，<code>getFlag()</code>返回了flag值，当你正确输入了flag，这个函数被调用。总结以下几点：</p>
+<ul>
+<li><code>getFlag()</code>函数定义于<code>native-lib</code>的so库中，要想得到flag的值，方法有两个<ul>
+<li>动态调试apk</li>
+<li>逆向so库</li>
+</ul>
+</li>
+<li>注意<code>return</code>，即使你正确的输入了flag，这个程序将退出</li>
+</ul>
+<p>接下来我们来说说远程调试apk</p>
+<h2 id="0x02-Android-Studio环境准备"><a href="#0x02-Android-Studio环境准备" class="headerlink" title="0x02 Android Studio环境准备"></a>0x02 Android Studio环境准备</h2><p>ADT的安装以及Android Studio的配置我就不多说了，补充一点，Android Studio要安装<strong>Smalidea插件</strong></p>
+<p>我们选择动态调试smali文件，他们在上文中xml文件夹中的smali文件夹中。<br><img src="http://www.bxsteam.xyz/wp-content/uploads/2016/12/as-1.png" alt="as-1"><br>首先，我们将它拷贝出来，导入Android Studio工程<br><img src="http://www.bxsteam.xyz/wp-content/uploads/2016/12/as-2.png" alt="as-2"><br>导入成功后，我们设置配置文件<br>点击工具栏下拉框的Edit Configurations<br><img src="http://www.bxsteam.xyz/wp-content/uploads/2016/12/as-3.png" alt="as-3"><br>因为要用ddms调试，所以选择端口8700</p>
+<p>打开虚拟机<br><img src="http://www.bxsteam.xyz/wp-content/uploads/2016/12/as-4.png" alt="as-4"><br>打开ddms<br><img src="http://www.bxsteam.xyz/wp-content/uploads/2016/12/as-5.png" alt="as-5"></p>
+<h2 id="0x03-软件可调试准备"><a href="#0x03-软件可调试准备" class="headerlink" title="0x03 软件可调试准备"></a>0x03 软件可调试准备</h2><p>一般release版的apk是无法直接调试的，所以我们要更改AndroidManifest.xml文件开启debug并且重新打包</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?xml version=<span class="string">&quot;1.0&quot;</span> encoding=<span class="string">&quot;utf-8&quot;</span> standalone=<span class="string">&quot;no&quot;</span>?&gt;</span></span><br><span class="line"><span class="tag">&lt;<span class="name">manifest</span> <span class="attr">xmlns:android</span>=<span class="string">&quot;http://schemas.android.com/apk/res/android&quot;</span> <span class="attr">package</span>=<span class="string">&quot;com.suctf.naive&quot;</span> <span class="attr">platformBuildVersionCode</span>=<span class="string">&quot;23&quot;</span> <span class="attr">platformBuildVersionName</span>=<span class="string">&quot;6.0-2704002&quot;</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;<span class="name">application</span> <span class="attr">android:allowBackup</span>=<span class="string">&quot;true&quot;</span> <span class="attr">android:icon</span>=<span class="string">&quot;@mipmap/ic_launcher&quot;</span> <span class="attr">android:label</span>=<span class="string">&quot;@string/app_name&quot;</span> <span class="attr">android:supportsRtl</span>=<span class="string">&quot;true&quot;</span> <span class="attr">android:theme</span>=<span class="string">&quot;@style/AppTheme&quot;</span> <span class="attr">android:debuggable</span>=<span class="string">&quot;true&quot;</span>&gt;</span><span class="comment">&lt;!--在application标签添加属性--&gt;</span></span><br><span class="line">        <span class="tag">&lt;<span class="name">activity</span> <span class="attr">android:name</span>=<span class="string">&quot;com.suctf.naive.MainActivity&quot;</span>&gt;</span></span><br><span class="line">            <span class="tag">&lt;<span class="name">intent-filter</span>&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">action</span> <span class="attr">android:name</span>=<span class="string">&quot;android.intent.action.MAIN&quot;</span>/&gt;</span></span><br><span class="line">                <span class="tag">&lt;<span class="name">category</span> <span class="attr">android:name</span>=<span class="string">&quot;android.intent.category.LAUNCHER&quot;</span>/&gt;</span></span><br><span class="line">            <span class="tag">&lt;/<span class="name">intent-filter</span>&gt;</span></span><br><span class="line">        <span class="tag">&lt;/<span class="name">activity</span>&gt;</span></span><br><span class="line">    <span class="tag">&lt;/<span class="name">application</span>&gt;</span></span><br><span class="line"><span class="tag">&lt;/<span class="name">manifest</span>&gt;</span></span><br></pre></td></tr></table></figure>
+<p>在application标签添加属性<code>android:debuggable=&quot;true&quot;</code>,然后重新打包</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">apktool b xml -o ..\newapk\new.apk <span class="comment">#重新将xml文件夹打包成apk</span></span><br></pre></td></tr></table></figure>
+<p>打包过后要进行签名才能安装</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">jarsigner -verbose -keystore 1.keystore -signedjar .\newapk\signed.apk .\newapk\new.apk key1 -digestalg SHA1 -sigalg MD5withRSA</span><br></pre></td></tr></table></figure>
+<p><code>1.keystore</code>是我生成的签名文件，具体生成方法可以去百度~<br>最后一步，安装到虚拟机</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">adb install signed.apk</span><br></pre></td></tr></table></figure>
+
+<h2 id="0x04-开始调试"><a href="#0x04-开始调试" class="headerlink" title="0x04 开始调试"></a>0x04 开始调试</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">adb shell <span class="comment">#进入adb远程shell</span></span><br><span class="line">$ am start -D -n com.suctf.naive/.MainActivity <span class="comment">#进入调试模式</span></span><br></pre></td></tr></table></figure>
+<p>我们会看到，ddms中com.suctf.naive进入了调试模式<br><img src="http://www.bxsteam.xyz/wp-content/uploads/2016/12/as-6.png" alt="as-6"><br>虚拟机也进入等待调试器连接中<br><img src="http://www.bxsteam.xyz/wp-content/uploads/2016/12/as-7.png" alt="as-7"><br>接下来点击调试按钮，在MainActivity$1.smali的66行下断点<br><img src="http://www.bxsteam.xyz/wp-content/uploads/2016/12/as-8.png" alt="as-8"><br>在虚拟机中点击CHECK<br><img src="http://www.bxsteam.xyz/wp-content/uploads/2016/12/as-9.png" alt="as-9"><br>在程序判断字符串equals时，监视变量v0和v1，v0是lib返回的字符串，v1是app输入的字符串<br><img src="http://www.bxsteam.xyz/wp-content/uploads/2016/12/as-10.png" alt="as-10"><br>看，我们轻松的拿到了flag<code>suctf&#123;Meet_jni_50_fun&#125;</code></p>
+<h2 id="0x05-小结"><a href="#0x05-小结" class="headerlink" title="0x05 小结"></a>0x05 小结</h2><p>多动手多实践，才能总结套路呀~最后还请各位大佬多带带我(o゜▽゜)o☆</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Appl3s</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://example.com/2016/12/05/taolu/">http://example.com/2016/12/05/taolu/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2025 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>Do you believe in <strong>DESTINY</strong>?</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/bxsteam/"># bxsteam</a>
+                    
+                        <a href="/tags/%E5%B9%B2%E8%B4%A7/"># 干货</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2016/12/08/bind9/">如何用bind9搭建自己的dns服务器</a>
+            
+            
+            <a class="next" rel="next" href="/2016/07/12/re03/">普普通通的逆向</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Appl3s | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

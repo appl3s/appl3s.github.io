@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Appl3s">
+
+
+
+
+
+<title>普普通通的逆向 | Appl3s的博客</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Appl3s&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Appl3s&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">普普通通的逆向</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Appl3s</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">July 12, 2016&nbsp;&nbsp;18:33:54</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h1 id="reverse03"><a href="#reverse03" class="headerlink" title="reverse03:"></a>reverse03:</h1><h2 id="author-deadfish"><a href="#author-deadfish" class="headerlink" title="author @deadfish"></a>author @deadfish</h2><p>闲着无聊 做了学校的ctf平台的一题（之前遗留了）<br>先uxp脱壳 然后拖进ida</p>
+<span id="more"></span>
+<p>主要代码如下</p>
+<pre><code>falgDug = 0;
+inUser = 0;                                   // [bp-14h] 开始依次 48, 52, 49, 55, 53, 49, 51, 48, 48, 49, 51, 50
+v_13h = 0;
+v_Fh = 0;
+v22 = 0;
+v23 = 0;
+inPass = 0;
+v13 = 0;
+v14 = 0;
+v15 = 0;
+v16 = 0;
+v17 = 0;
+v18 = 0;
+printf(&quot;输入用户名:&quot;);
+scanf(&quot;%15s&quot;, &amp;inUser);
+printf(&quot;\n&quot;);
+printf(&quot;输入密码:&quot;);
+scanf(&quot;%25s&quot;, &amp;inPass);
+iU = strlen(&amp;inUser);
+for ( i = 0; i &lt; iU; ++i )
+&#123;
+if ( *(&amp;inUser + i) &lt; &#39;0&#39; || *(&amp;inUser + i) &gt; &#39;9&#39; )
+&#123;
+  printf(&quot;用户名必须为数字&quot;);
+  goto LABEL_13;
+&#125;
+&#125;
+v9 = GetTickCount();
+v5 = &amp;loc_401052;
+IsOver = 0x40;
+do
+&#123;                                             // check int
+if ( !IsOver )
+  break;                                    // 检测int3断点防止调试
+getInt3 = *(_BYTE *)v5 == 0xCCu;
+v5 = (char *)v5 + 1;
+--IsOver;
+&#125;
+while ( !getInt3 );
+if ( getInt3 )
+falgDug = 1;
+isInt = (GetTickCount() - v9) / 0x3E8 &gt; 1;    // 判断时间，防止调试
+produceAlph1(falgDug, (int)&amp;inUser, isInt);
+produceAlph2((char *)&amp;v_13h + 3);
+produceAlph3((char *)&amp;v_Fh + 3);
+checkPassword(&amp;inPass);
+LABEL_13:
+system(&quot;pause&quot;);
+return 0;
+</code></pre>
+<hr>
+<p>看到解密的数组列表<br>    alph1&#x3D;’onhtxdsqvpzcrefjigklfzbapvdqsxzrcefimlku’ <br /><br>    alph2&#x3D;’zscbmdvholblzftuhsxsbchanrcdqjvqfinotcbu’ <br /><br>    alph3&#x3D;’pzywrvdcbqeuafsxgmlitnkopvdqsxtdnapcuwys’<br /><br>    这里是在ida里算偏移算出来的 <br /><br>    username:041751300132 <br /><br>    对应位置为<br /><br>    bp-[h]  14  13  12  11  10  0f  0e  0d  0c  0b  0a  09 <br /><br>    &#x2F;&#x2F;      48, 52, 49, 55  53, 49, 51, 48  48, 49, 51, 50 <br /> </p>
+<hr>
+<pre><code>注意到
+produceAlph1中有个检测int3断点的程序，防止OD调试
+v9 = GetTickCount();
+v5 = &amp;loc_401052;
+IsOver = 0x40;
+do
+&#123;                                             // check int
+if ( !IsOver )
+  break;                                    // 检测int3断点防止调试
+getInt3 = *(_BYTE *)v5 == 0xCCu;
+v5 = (char *)v5 + 1;
+--IsOver;
+&#125;
+while ( !getInt3 );
+if ( getInt3 )
+falgDug = 1;
+</code></pre>
+<hr>
+<pre><code>###IDA伪指令解析错误:
+怎么写脚本调都不对，问了学长，flag对了，但是伪C代码逻辑有改地方不对
+这个地方：
+f_8 = *((_BYTE *)&amp;aIdaq64_exe[5 * (isDbg + 2 * (unsigned __int8)isFsd) + 2] + *(_BYTE *)pThis);
+反过去汇编才发现ida F5解析错了 应该是：
+*((_BYTE *)&amp;aIdaq64_exe[2 * 5 * (isDbg + 2 * (unsigned __int8)isFsd)]才对吧
+</code></pre>
+<hr>
+<pre><code>.text:00401420 var_4           = dword ptr -4
+.text:00401420
+.text:00401420                 push    ebp
+.text:00401421                 mov     ebp, esp
+.text:00401423                 push    ecx
+.text:00401424                 push    ebx
+.text:00401425                 push    esi
+.text:00401426                 mov     esi, ecx
+.text:00401428                 mov     [ebp+var_4], 0  ; var_4 = 0
+.text:0040142F                 mov     cl, 1
+.text:00401431                 mov     eax, large fs:&#39;0&#39;
+.text:00401437                 mov     eax, [eax+68h]  ; eax += fs:&#39;0&#39;
+.text:0040143A                 mov     [ebp+var_4], eax
+.text:0040143D                 test    byte ptr [ebp+var_4], &#39;p&#39;
+.text:00401441                 mov     eax, 0
+.text:00401446                 movzx   ebx, cl         ; if (var_4 == &#39;p&#39;) ebx = 1
+.text:00401446                                         ; else     ebx = 0
+.text:00401449                 cmovnz  ebx, eax
+.text:0040144C                 call    ds:IsDebuggerPresent
+.text:00401452                 neg     eax             ; if (IsDebuggerPresent) eax = 1
+.text:00401452                                         ; else eax = 0
+.text:00401454                 movzx   ecx, bl         ; 设isFsd = bl
+.text:00401457                 sbb     eax, eax
+.text:00401459                 neg     eax             ; 设isDbg = eax
+.text:0040145B                 lea     eax, [eax+ecx*2] ; eax = isDbg + 2*isFsd
+.text:0040145E                 lea     ecx, [eax+eax*4] ; ecx = 5*(eaxL) = 5*(isDbg + 2*isFsd)
+.text:00401461                 movsx   eax, byte ptr [esi]
+.text:00401464                 movzx   eax, byte ptr [eax+ecx*2+4021A0h] ; 2*ecx = 2*5*(isDbg + 2*isFsd) = 10*(isDbg + 2*isFsd)
+.text:0040146C                 mov     f_8, al         ; 当 isDbg=0 isFsd=1 该值为 10*2-20
+.text:0040146C                                         ; 和ad3_1 = 0
+.text:0040146C                                         ; ad3_2 = 1
+.text:0040146C                                         ; ad3 = 5*(ad3_1 + 2 * ad3_2 + 2) = 20 一致
+.text:00401471                 movsx   eax, byte ptr [esi+1]
+.text:00401475                 movzx   eax, byte ptr [eax+ecx*2+4021A0h]
+.text:0040147D                 mov     f_9, al
+.text:00401482                 movsx   eax, byte ptr [esi+2]
+.text:00401486                 movzx   eax, byte ptr [eax+ecx*2+4021A0h]
+.text:0040148E                 mov     f_10, al
+.text:00401493                 movsx   eax, byte ptr [esi+3]
+.text:00401497                 pop     esi
+.text:00401498                 pop     ebx
+.text:00401499                 movzx   eax, byte ptr [eax+ecx*2+4021A0h]
+.text:004014A1                 mov     f_11, al
+.text:004014A6                 mov     esp, ebp
+.text:004014A8                 pop     ebp
+.text:004014A9                 retn
+.text:004014A9 produceAlph3    endp
+
+(
+neg r 指令的结果是设置Carry Flag, 也就是借位的标志位. 因为neg r的操作语义是0 - r, 零减去任何非零的数,都会产生&quot;借位&quot;的. 当然这里r寄存器中的值也被改掉了,不过没关系, 反正它都要被稍后的指令再改掉的.
+sbb r, r 指令设置r为零或者-1. 因为语义为用一个值去减掉它自身, 结果当然是零啰. 但是,这样做会把carry flag一起给减掉的, 该指令的公式是
+r – r – CF –&gt;  r 
+
+为零(ZF=1) CMOVZ AX, BX
+CMOVZ r32, r/m32 CMOVZ EAX, EB
+)
+</code></pre>
+<hr>
+<h4 id="推广-题目来自-普普通通的逆向"><a href="#推广-题目来自-普普通通的逆向" class="headerlink" title="推广 题目来自:普普通通的逆向"></a>推广 题目来自:<a target="_blank" rel="noopener" href="http://219.219.60.244/challenges.php">普普通通的逆向</a></h4>
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Appl3s</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://example.com/2016/07/12/re03/">http://example.com/2016/07/12/re03/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2025 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>Do you believe in <strong>DESTINY</strong>?</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/writeup/"># writeup</a>
+                    
+                        <a href="/tags/reverse/"># reverse</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2016/12/05/taolu/">Android动态调试中的套路</a>
+            
+            
+            <a class="next" rel="next" href="/2016/06/12/gootan2/">记“古檀杯”大学生网络安全技能大赛决赛(二)</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Appl3s | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Appl3s">
+
+
+
+
+
+<title>PHP extension调用so库 | Appl3s的博客</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Appl3s&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Appl3s&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">PHP extension调用so库</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Appl3s</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">December 20, 2016&nbsp;&nbsp;23:56:38</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="0x00-extension是啥"><a href="#0x00-extension是啥" class="headerlink" title="0x00 extension是啥"></a>0x00 extension是啥</h2><p>extension是用c开发的扩展，引入来提高网站运行效率，也可以作为底层驱动上层接口来使用，因为我的创新项目要用到底层函数的调用，所以记录一下其中的坑</p>
+<span id="more"></span>
+<h2 id="0x01-环境准备"><a href="#0x01-环境准备" class="headerlink" title="0x01 环境准备"></a>0x01 环境准备</h2><p>系统在ubuntu14.04下，php5环境。因为要用到<code>phpize</code>命令，但是直接<code>apt-get install</code>安装的php没有，所以我们还需要装一个</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">sudo</span> apt-get install php5-dev</span><br></pre></td></tr></table></figure>
+<h2 id="0x02-so的编写"><a href="#0x02-so的编写" class="headerlink" title="0x02 so的编写"></a>0x02 so的编写</h2><p> 参考网上的教程，我写了一个函数，很简单</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> code</span><br><span class="line"><span class="built_in">cd</span> code</span><br><span class="line">vi hello.c</span><br></pre></td></tr></table></figure>
+<p>文件内容</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">int hello(int a,int b)&#123;</span><br><span class="line">    return a+b; </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p> 编写测试文件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">vi test.c</span><br></pre></td></tr></table></figure>
+<p>内容</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line">#include &lt;stdio.h&gt;</span><br><span class="line">void hello(int,int);</span><br><span class="line">int main()</span><br><span class="line">&#123;</span><br><span class="line">        int a = 3, b = 4;</span><br><span class="line">        printf(&quot;%d + %d = %d\n&quot;, a, b, hello(a,b));</span><br><span class="line">        return 0;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>执行命令</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">gcc hello.c -shared -o libhello.so <span class="comment">#生成so</span></span><br><span class="line"><span class="built_in">cp</span> libhello.so /usr/local/lib/libhello.so <span class="comment">#拷贝到系统公共库</span></span><br><span class="line">ldconfig <span class="comment">#载入库</span></span><br><span class="line">gcc -o <span class="built_in">test</span> test.c -lhello <span class="comment">#编译test</span></span><br><span class="line">./test <span class="comment">#执行test，如果结果3+4=7则说明so调用成功</span></span><br></pre></td></tr></table></figure>
+
+<h2 id="0x03-编写PHP-extension"><a href="#0x03-编写PHP-extension" class="headerlink" title="0x03 编写PHP extension"></a>0x03 编写PHP extension</h2><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">mkdir</span> /usr/share/php5/ext_mine</span><br><span class="line"><span class="built_in">cd</span> /usr/share/php5/ext_mine</span><br><span class="line">vi fun.def</span><br></pre></td></tr></table></figure>
+<p>文件内容</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">int hello(int a,int b)</span><br></pre></td></tr></table></figure>
+<p>注意没有<strong>分号</strong></p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">../ext_skel --extname=hello --proto=fun.def --skel=/usr/share/php5/skeleton</span><br></pre></td></tr></table></figure>
+<p>你会发现目录下有hello文件夹，里面生成了hello.c等等一系列文件<br>进入目录我们来继续配置</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">cd hello</span><br><span class="line">vi config.m4</span><br></pre></td></tr></table></figure>
+<p>去掉第16和18行的<code>dnl</code></p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">16:  PHP_ARG_ENABLE(hello, whether to enable hello support,</span><br><span class="line">17:  dnl Make sure that the comment is aligned:</span><br><span class="line">18:  [  --enable-hello           Enable hello support])</span><br></pre></td></tr></table></figure>
+<p>接下来修改hello.c<br>改写<code>PHP_FUNCTION(hello)</code>函数,增加返回值</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br><span class="line">166</span><br><span class="line">167</span><br><span class="line">168</span><br><span class="line">169</span><br><span class="line">170</span><br><span class="line">171</span><br><span class="line">172</span><br><span class="line">173</span><br><span class="line">174</span><br><span class="line">175</span><br><span class="line">176</span><br><span class="line">177</span><br><span class="line">178</span><br><span class="line">179</span><br><span class="line">180</span><br><span class="line">181</span><br></pre></td><td class="code"><pre><span class="line">//hello.c</span><br><span class="line">#ifdef HAVE_CONFIG_H</span><br><span class="line">#include &quot;config.h&quot;</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">#include &quot;php.h&quot;</span><br><span class="line">#include &quot;php_ini.h&quot;</span><br><span class="line">#include &quot;ext/standard/info.h&quot;</span><br><span class="line">#include &quot;php_hello.h&quot;</span><br><span class="line"></span><br><span class="line">/* If you declare any globals in php_hello.h uncomment this:</span><br><span class="line">ZEND_DECLARE_MODULE_GLOBALS(hello)</span><br><span class="line">*/</span><br><span class="line"></span><br><span class="line">/* True global resources - no need for thread safety here */</span><br><span class="line">static int le_hello;</span><br><span class="line"></span><br><span class="line">/* &#123;&#123;&#123; hello_functions[]</span><br><span class="line"> *</span><br><span class="line"> * Every user visible function must have an entry in hello_functions[].</span><br><span class="line"> */</span><br><span class="line">const zend_function_entry hello_functions[] = &#123;</span><br><span class="line">	PHP_FE(confirm_hello_compiled,	NULL)		/* For testing, remove later. */</span><br><span class="line">	PHP_FE(hello,	NULL)</span><br><span class="line">	PHP_FE_END	/* Must be the last line in hello_functions[] */</span><br><span class="line">&#125;;</span><br><span class="line">/* &#125;&#125;&#125; */</span><br><span class="line"></span><br><span class="line">/* &#123;&#123;&#123; hello_module_entry</span><br><span class="line"> */</span><br><span class="line">zend_module_entry hello_module_entry = &#123;</span><br><span class="line">#if ZEND_MODULE_API_NO &gt;= 20010901</span><br><span class="line">	STANDARD_MODULE_HEADER,</span><br><span class="line">#endif</span><br><span class="line">	&quot;hello&quot;,</span><br><span class="line">	hello_functions,</span><br><span class="line">	PHP_MINIT(hello),</span><br><span class="line">	PHP_MSHUTDOWN(hello),</span><br><span class="line">	PHP_RINIT(hello),		/* Replace with NULL if there&#x27;s nothing to do at request start */</span><br><span class="line">	PHP_RSHUTDOWN(hello),	/* Replace with NULL if there&#x27;s nothing to do at request end */</span><br><span class="line">	PHP_MINFO(hello),</span><br><span class="line">#if ZEND_MODULE_API_NO &gt;= 20010901</span><br><span class="line">	PHP_HELLO_VERSION,</span><br><span class="line">#endif</span><br><span class="line">	STANDARD_MODULE_PROPERTIES</span><br><span class="line">&#125;;</span><br><span class="line">/* &#125;&#125;&#125; */</span><br><span class="line"></span><br><span class="line">#ifdef COMPILE_DL_HELLO</span><br><span class="line">ZEND_GET_MODULE(hello)</span><br><span class="line">#endif</span><br><span class="line"></span><br><span class="line">/* &#123;&#123;&#123; PHP_INI</span><br><span class="line"> */</span><br><span class="line">/* Remove comments and fill if you need to have entries in php.ini</span><br><span class="line">PHP_INI_BEGIN()</span><br><span class="line">    STD_PHP_INI_ENTRY(&quot;hello.global_value&quot;,      &quot;42&quot;, PHP_INI_ALL, OnUpdateLong, global_value, zend_hello_globals, hello_globals)</span><br><span class="line">    STD_PHP_INI_ENTRY(&quot;hello.global_string&quot;, &quot;foobar&quot;, PHP_INI_ALL, OnUpdateString, global_string, zend_hello_globals, hello_globals)</span><br><span class="line">PHP_INI_END()</span><br><span class="line">*/</span><br><span class="line">/* &#125;&#125;&#125; */</span><br><span class="line"></span><br><span class="line">/* &#123;&#123;&#123; php_hello_init_globals</span><br><span class="line"> */</span><br><span class="line">/* Uncomment this function if you have INI entries</span><br><span class="line">static void php_hello_init_globals(zend_hello_globals *hello_globals)</span><br><span class="line">&#123;</span><br><span class="line">	hello_globals-&gt;global_value = 0;</span><br><span class="line">	hello_globals-&gt;global_string = NULL;</span><br><span class="line">&#125;</span><br><span class="line">*/</span><br><span class="line">/* &#125;&#125;&#125; */</span><br><span class="line"></span><br><span class="line">/* &#123;&#123;&#123; PHP_MINIT_FUNCTION</span><br><span class="line"> */</span><br><span class="line">PHP_MINIT_FUNCTION(hello)</span><br><span class="line">&#123;</span><br><span class="line">	/* If you have INI entries, uncomment these lines </span><br><span class="line">	REGISTER_INI_ENTRIES();</span><br><span class="line">	*/</span><br><span class="line">	return SUCCESS;</span><br><span class="line">&#125;</span><br><span class="line">/* &#125;&#125;&#125; */</span><br><span class="line"></span><br><span class="line">/* &#123;&#123;&#123; PHP_MSHUTDOWN_FUNCTION</span><br><span class="line"> */</span><br><span class="line">PHP_MSHUTDOWN_FUNCTION(hello)</span><br><span class="line">&#123;</span><br><span class="line">	/* uncomment this line if you have INI entries</span><br><span class="line">	UNREGISTER_INI_ENTRIES();</span><br><span class="line">	*/</span><br><span class="line">	return SUCCESS;</span><br><span class="line">&#125;</span><br><span class="line">/* &#125;&#125;&#125; */</span><br><span class="line"></span><br><span class="line">/* Remove if there&#x27;s nothing to do at request start */</span><br><span class="line">/* &#123;&#123;&#123; PHP_RINIT_FUNCTION</span><br><span class="line"> */</span><br><span class="line">PHP_RINIT_FUNCTION(hello)</span><br><span class="line">&#123;</span><br><span class="line">	return SUCCESS;</span><br><span class="line">&#125;</span><br><span class="line">/* &#125;&#125;&#125; */</span><br><span class="line"></span><br><span class="line">/* Remove if there&#x27;s nothing to do at request end */</span><br><span class="line">/* &#123;&#123;&#123; PHP_RSHUTDOWN_FUNCTION</span><br><span class="line"> */</span><br><span class="line">PHP_RSHUTDOWN_FUNCTION(hello)</span><br><span class="line">&#123;</span><br><span class="line">	return SUCCESS;</span><br><span class="line">&#125;</span><br><span class="line">/* &#125;&#125;&#125; */</span><br><span class="line"></span><br><span class="line">/* &#123;&#123;&#123; PHP_MINFO_FUNCTION</span><br><span class="line"> */</span><br><span class="line">PHP_MINFO_FUNCTION(hello)</span><br><span class="line">&#123;</span><br><span class="line">	php_info_print_table_start();</span><br><span class="line">	php_info_print_table_header(2, &quot;hello support&quot;, &quot;enabled&quot;);</span><br><span class="line">	php_info_print_table_end();</span><br><span class="line"></span><br><span class="line">	/* Remove comments if you have entries in php.ini</span><br><span class="line">	DISPLAY_INI_ENTRIES();</span><br><span class="line">	*/</span><br><span class="line">&#125;</span><br><span class="line">/* &#125;&#125;&#125; */</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">/* Remove the following function when you have successfully modified config.m4</span><br><span class="line">   so that your module can be compiled into PHP, it exists only for testing</span><br><span class="line">   purposes. */</span><br><span class="line"></span><br><span class="line">/* Every user-visible function in PHP should document itself in the source */</span><br><span class="line">/* &#123;&#123;&#123; proto string confirm_hello_compiled(string arg)</span><br><span class="line">   Return a string to confirm that the module is compiled in */</span><br><span class="line">PHP_FUNCTION(confirm_hello_compiled)</span><br><span class="line">&#123;</span><br><span class="line">	char *arg = NULL;</span><br><span class="line">	int arg_len, len;</span><br><span class="line">	char *strg;</span><br><span class="line"></span><br><span class="line">	if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, &quot;s&quot;, &amp;arg, &amp;arg_len) == FAILURE) &#123;</span><br><span class="line">		return;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	len = spprintf(&amp;strg, 0, &quot;Congratulations! You have successfully modified ext/%.78s/config.m4. Module %.78s is now compiled into PHP.&quot;, &quot;hello&quot;, arg);</span><br><span class="line">	RETURN_STRINGL(strg, len, 0);</span><br><span class="line">&#125;</span><br><span class="line">/* &#125;&#125;&#125; */</span><br><span class="line">/* The previous line is meant for vim and emacs, so it can correctly fold and </span><br><span class="line">   unfold functions in source code. See the corresponding marks just before </span><br><span class="line">   function definition, where the functions purpose is also documented. Please </span><br><span class="line">   follow this convention for the convenience of others editing your code.</span><br><span class="line">*/</span><br><span class="line"></span><br><span class="line">/* &#123;&#123;&#123; proto int hello(int a, int b)</span><br><span class="line">    */</span><br><span class="line">PHP_FUNCTION(hello)</span><br><span class="line">&#123;</span><br><span class="line">	int argc = ZEND_NUM_ARGS();</span><br><span class="line">	long a;</span><br><span class="line">	long b;</span><br><span class="line">	long result;</span><br><span class="line">	if (zend_parse_parameters(argc TSRMLS_CC, &quot;ll&quot;, &amp;a, &amp;b) == FAILURE) </span><br><span class="line">		return;</span><br><span class="line">	result=hello(a,b);//调用so库函数</span><br><span class="line">	RETURN_LONG(result);</span><br><span class="line">	php_error(E_WARNING, &quot;hello: not yet implemented&quot;);</span><br><span class="line">&#125;</span><br><span class="line">/* &#125;&#125;&#125; */</span><br><span class="line"></span><br><span class="line"></span><br><span class="line">/*</span><br><span class="line"> * Local variables:</span><br><span class="line"> * tab-width: 4</span><br><span class="line"> * c-basic-offset: 4</span><br><span class="line"> * End:</span><br><span class="line"> * vim600: noet sw=4 ts=4 fdm=marker</span><br><span class="line"> * vim&lt;600: noet sw=4 ts=4</span><br><span class="line"> */</span><br><span class="line"></span><br></pre></td></tr></table></figure>
+<p>接下来用<code>phpize</code>命令生成configure文件</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">phpize</span><br><span class="line">./configure -with-php-config=/usr/bin/php-config <span class="comment">#生成makefile</span></span><br><span class="line">make LDFLAGS=-lhello <span class="comment">#载入libhello.so并make</span></span><br><span class="line">make <span class="built_in">test</span></span><br></pre></td></tr></table></figure>
+<p>如果test的结果是</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line">=====================================================================</span><br><span class="line">PHP         : /usr/bin/php</span><br><span class="line">PHP_SAPI    : cli</span><br><span class="line">PHP_VERSION : 5.5.9-1ubuntu4.20</span><br><span class="line">ZEND_VERSION: 2.5.0</span><br><span class="line">PHP_OS      : Linux - Linux vultr.guest 3.13.0-95-generic <span class="comment">#142-Ubuntu SMP Fri Aug 12 17:00:09 UTC 2016 x86_64</span></span><br><span class="line">INI actual  : /usr/share/php5/ext_minister/hello/tmp-php.ini</span><br><span class="line">More .INIs  :</span><br><span class="line">CWD         : /usr/share/php5/ext_minister/hello</span><br><span class="line">Extra <span class="built_in">dirs</span>  :</span><br><span class="line">VALGRIND    : Not used</span><br><span class="line">=====================================================================</span><br><span class="line">TIME START 2016-12-19 16:18:31</span><br><span class="line">=====================================================================</span><br><span class="line">PASS Check <span class="keyword">for</span> hello presence [tests/001.phpt]</span><br><span class="line">=====================================================================</span><br><span class="line">TIME END 2016-12-19 16:18:31</span><br><span class="line"></span><br><span class="line">=====================================================================</span><br><span class="line">TEST RESULT SUMMARY</span><br><span class="line">---------------------------------------------------------------------</span><br><span class="line">Exts skipped    :    0</span><br><span class="line">Exts tested     :   43</span><br><span class="line">---------------------------------------------------------------------</span><br><span class="line"></span><br><span class="line">Number of tests :    1                 1</span><br><span class="line">Tests skipped   :    0 (  0.0%) --------</span><br><span class="line">Tests warned    :    0 (  0.0%) (  0.0%)</span><br><span class="line">Tests failed    :    0 (  0.0%) (  0.0%)</span><br><span class="line">Expected fail   :    0 (  0.0%) (  0.0%)</span><br><span class="line">Tests passed    :    1 (100.0%) (100.0%) <span class="comment">#注意这里</span></span><br><span class="line">---------------------------------------------------------------------</span><br><span class="line">Time taken      :    0 seconds</span><br><span class="line">=====================================================================</span><br><span class="line"></span><br><span class="line">This report can be automatically sent to the PHP QA team at</span><br><span class="line">http://qa.php.net/reports and http://news.php.net/php.qa.reports</span><br><span class="line">This gives us a better understanding of PHP<span class="string">&#x27;s behavior.</span></span><br><span class="line"><span class="string">If you don&#x27;</span>t want to send the report immediately you can choose</span><br><span class="line">option <span class="string">&quot;s&quot;</span> to save it.  You can <span class="keyword">then</span> email it to qa-reports@lists.php.net later.</span><br><span class="line">Do you want to send this report now? [Yns]:</span><br></pre></td></tr></table></figure>
+<p>就表明测试通过了</p>
+<figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">make install <span class="comment">#将库安装到php的扩展文件夹里面</span></span><br></pre></td></tr></table></figure>
+<p>接下来我们编辑php.ini载入这个库</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">vi /etc/php5/apache2/php.ini</span><br><span class="line">#在文件末尾添加</span><br><span class="line">extension=hello.so</span><br><span class="line">#重启apache</span><br><span class="line">/etc/init.d/apache2 restart</span><br></pre></td></tr></table></figure>
+<p>然后我们编写测试php文件</p>
+<figure class="highlight php"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">&lt;?php</span></span><br><span class="line">	<span class="keyword">echo</span> <span class="title function_ invoke__">hello</span>(<span class="number">3</span>, <span class="number">4</span>);</span><br><span class="line">	<span class="title function_ invoke__">phpinfo</span>();</span><br></pre></td></tr></table></figure>
+<p>执行结果如下<br>可以看出，我们成功的引入了hello模块并且执行了so中的函数</p>
+<h2 id="0x04-小结"><a href="#0x04-小结" class="headerlink" title="0x04 小结"></a>0x04 小结</h2><p>这个php扩展也有可能成为持久化后门，这个我们下次再分享啦~</p>
+
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Appl3s</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://example.com/2016/12/20/phpext/">http://example.com/2016/12/20/phpext/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2025 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>Do you believe in <strong>DESTINY</strong>?</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/%E5%B9%B2%E8%B4%A7/"># 干货</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+                <a class="prev" rel="prev" href="/2017/05/23/hash-length-extension-attack/">哈希长度扩展攻击</a>
+            
+            
+            <a class="next" rel="next" href="/2016/12/08/bind9/">如何用bind9搭建自己的dns服务器</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Appl3s | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>
