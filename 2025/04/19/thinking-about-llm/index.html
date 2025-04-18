@@ -13,7 +13,7 @@
 
 
 
-<title>普普通通的逆向 | Appl3s的博客</title>
+<title>大模型相关的思考 | Appl3s的博客</title>
 
 
 
@@ -196,7 +196,7 @@
     
     <article class="post-wrap">
         <header class="post-header">
-            <h1 class="post-title">普普通通的逆向</h1>
+            <h1 class="post-title">大模型相关的思考</h1>
             
                 <div class="post-meta">
                     
@@ -205,7 +205,7 @@
 
                     
                         <span class="post-time">
-                        Date: <a href="#">July 12, 2016&nbsp;&nbsp;18:33:54</a>
+                        Date: <a href="#">April 19, 2025&nbsp;&nbsp;0:03:08</a>
                         </span>
                     
                     
@@ -214,148 +214,49 @@
         </header>
 
         <div class="post-content">
-            <h1 id="reverse03"><a href="#reverse03" class="headerlink" title="reverse03:"></a>reverse03:</h1><h2 id="author-deadfish"><a href="#author-deadfish" class="headerlink" title="author @deadfish"></a>author @deadfish</h2><p>闲着无聊 做了学校的ctf平台的一题（之前遗留了）<br>先uxp脱壳 然后拖进ida</p>
+            <h1 id="大模型思维"><a href="#大模型思维" class="headerlink" title="大模型思维"></a>大模型思维</h1><p>最近一段时间80%的时间都转型到大模型了可能也是大势所趋（浪潮汹涌）</p>
 <span id="more"></span>
 
-<p>主要代码如下</p>
-<pre><code>falgDug = 0;
-inUser = 0;                                   // [bp-14h] 开始依次 48, 52, 49, 55, 53, 49, 51, 48, 48, 49, 51, 50
-v_13h = 0;
-v_Fh = 0;
-v22 = 0;
-v23 = 0;
-inPass = 0;
-v13 = 0;
-v14 = 0;
-v15 = 0;
-v16 = 0;
-v17 = 0;
-v18 = 0;
-printf(&quot;输入用户名:&quot;);
-scanf(&quot;%15s&quot;, &amp;inUser);
-printf(&quot;\n&quot;);
-printf(&quot;输入密码:&quot;);
-scanf(&quot;%25s&quot;, &amp;inPass);
-iU = strlen(&amp;inUser);
-for ( i = 0; i &lt; iU; ++i )
-&#123;
-if ( *(&amp;inUser + i) &lt; &#39;0&#39; || *(&amp;inUser + i) &gt; &#39;9&#39; )
-&#123;
-  printf(&quot;用户名必须为数字&quot;);
-  goto LABEL_13;
-&#125;
-&#125;
-v9 = GetTickCount();
-v5 = &amp;loc_401052;
-IsOver = 0x40;
-do
-&#123;                                             // check int
-if ( !IsOver )
-  break;                                    // 检测int3断点防止调试
-getInt3 = *(_BYTE *)v5 == 0xCCu;
-v5 = (char *)v5 + 1;
---IsOver;
-&#125;
-while ( !getInt3 );
-if ( getInt3 )
-falgDug = 1;
-isInt = (GetTickCount() - v9) / 0x3E8 &gt; 1;    // 判断时间，防止调试
-produceAlph1(falgDug, (int)&amp;inUser, isInt);
-produceAlph2((char *)&amp;v_13h + 3);
-produceAlph3((char *)&amp;v_Fh + 3);
-checkPassword(&amp;inPass);
-LABEL_13:
-system(&quot;pause&quot;);
-return 0;
-</code></pre>
-<hr>
-<p>看到解密的数组列表<br>    alph1&#x3D;’onhtxdsqvpzcrefjigklfzbapvdqsxzrcefimlku’ <br /><br>    alph2&#x3D;’zscbmdvholblzftuhsxsbchanrcdqjvqfinotcbu’ <br /><br>    alph3&#x3D;’pzywrvdcbqeuafsxgmlitnkopvdqsxtdnapcuwys’<br /><br>    这里是在ida里算偏移算出来的 <br /><br>    username:041751300132 <br /><br>    对应位置为<br /><br>    bp-[h]  14  13  12  11  10  0f  0e  0d  0c  0b  0a  09 <br /><br>    &#x2F;&#x2F;      48, 52, 49, 55  53, 49, 51, 48  48, 49, 51, 50 <br /> </p>
-<hr>
-<pre><code>注意到
-produceAlph1中有个检测int3断点的程序，防止OD调试
-v9 = GetTickCount();
-v5 = &amp;loc_401052;
-IsOver = 0x40;
-do
-&#123;                                             // check int
-if ( !IsOver )
-  break;                                    // 检测int3断点防止调试
-getInt3 = *(_BYTE *)v5 == 0xCCu;
-v5 = (char *)v5 + 1;
---IsOver;
-&#125;
-while ( !getInt3 );
-if ( getInt3 )
-falgDug = 1;
-</code></pre>
-<hr>
-<pre><code>###IDA伪指令解析错误:
-怎么写脚本调都不对，问了学长，flag对了，但是伪C代码逻辑有改地方不对
-这个地方：
-f_8 = *((_BYTE *)&amp;aIdaq64_exe[5 * (isDbg + 2 * (unsigned __int8)isFsd) + 2] + *(_BYTE *)pThis);
-反过去汇编才发现ida F5解析错了 应该是：
-*((_BYTE *)&amp;aIdaq64_exe[2 * 5 * (isDbg + 2 * (unsigned __int8)isFsd)]才对吧
-</code></pre>
-<hr>
-<pre><code>.text:00401420 var_4           = dword ptr -4
-.text:00401420
-.text:00401420                 push    ebp
-.text:00401421                 mov     ebp, esp
-.text:00401423                 push    ecx
-.text:00401424                 push    ebx
-.text:00401425                 push    esi
-.text:00401426                 mov     esi, ecx
-.text:00401428                 mov     [ebp+var_4], 0  ; var_4 = 0
-.text:0040142F                 mov     cl, 1
-.text:00401431                 mov     eax, large fs:&#39;0&#39;
-.text:00401437                 mov     eax, [eax+68h]  ; eax += fs:&#39;0&#39;
-.text:0040143A                 mov     [ebp+var_4], eax
-.text:0040143D                 test    byte ptr [ebp+var_4], &#39;p&#39;
-.text:00401441                 mov     eax, 0
-.text:00401446                 movzx   ebx, cl         ; if (var_4 == &#39;p&#39;) ebx = 1
-.text:00401446                                         ; else     ebx = 0
-.text:00401449                 cmovnz  ebx, eax
-.text:0040144C                 call    ds:IsDebuggerPresent
-.text:00401452                 neg     eax             ; if (IsDebuggerPresent) eax = 1
-.text:00401452                                         ; else eax = 0
-.text:00401454                 movzx   ecx, bl         ; 设isFsd = bl
-.text:00401457                 sbb     eax, eax
-.text:00401459                 neg     eax             ; 设isDbg = eax
-.text:0040145B                 lea     eax, [eax+ecx*2] ; eax = isDbg + 2*isFsd
-.text:0040145E                 lea     ecx, [eax+eax*4] ; ecx = 5*(eaxL) = 5*(isDbg + 2*isFsd)
-.text:00401461                 movsx   eax, byte ptr [esi]
-.text:00401464                 movzx   eax, byte ptr [eax+ecx*2+4021A0h] ; 2*ecx = 2*5*(isDbg + 2*isFsd) = 10*(isDbg + 2*isFsd)
-.text:0040146C                 mov     f_8, al         ; 当 isDbg=0 isFsd=1 该值为 10*2-20
-.text:0040146C                                         ; 和ad3_1 = 0
-.text:0040146C                                         ; ad3_2 = 1
-.text:0040146C                                         ; ad3 = 5*(ad3_1 + 2 * ad3_2 + 2) = 20 一致
-.text:00401471                 movsx   eax, byte ptr [esi+1]
-.text:00401475                 movzx   eax, byte ptr [eax+ecx*2+4021A0h]
-.text:0040147D                 mov     f_9, al
-.text:00401482                 movsx   eax, byte ptr [esi+2]
-.text:00401486                 movzx   eax, byte ptr [eax+ecx*2+4021A0h]
-.text:0040148E                 mov     f_10, al
-.text:00401493                 movsx   eax, byte ptr [esi+3]
-.text:00401497                 pop     esi
-.text:00401498                 pop     ebx
-.text:00401499                 movzx   eax, byte ptr [eax+ecx*2+4021A0h]
-.text:004014A1                 mov     f_11, al
-.text:004014A6                 mov     esp, ebp
-.text:004014A8                 pop     ebp
-.text:004014A9                 retn
-.text:004014A9 produceAlph3    endp
+<h2 id="Diff"><a href="#Diff" class="headerlink" title="Diff"></a>Diff</h2><p>与传统研发模式相比，大模型带来了新的工作模式。在我这段时间使用下来主要表现在以下方面</p>
+<ol>
+<li><p>泛化：大模型真真切切的实现了一些能力—之前存在于“自然语言”描述无法代码化的知识变成模型的Instructions</p>
+</li>
+<li><p>共识：基座模型能力榜日新月异，Tokens也越来越便宜，生产力全面“大模型”化的势头Unstoppable</p>
+</li>
+<li><p>提效：现阶段的模型已经可以通过MCP、RAG等基建长出手脚，面对自然语言的知识可以瞬间<strong>赋能</strong>（不应该说黑话），往小了说，有一个聪明的实习生；往大了说，人类知识的传承都被解决了（硅基生命革命！）</p>
+</li>
+</ol>
+<p><img src="https://raw.githubusercontent.com/appl3s/img/master/d99608d3-27fe-4ca6-afd.png"></p>
+<h2 id="如何破局"><a href="#如何破局" class="headerlink" title="如何破局"></a>如何破局</h2><blockquote>
+<p> 在这样的背景下，各互联网大厂通通拥抱大模型，个人怎么在这样的背景下存活？</p>
+</blockquote>
+<h3 id="拥抱大模型"><a href="#拥抱大模型" class="headerlink" title="拥抱大模型"></a>拥抱大模型</h3><p>最近从0-1写了MCP、RAG、也动手搭建了ReAct Agent，后面找时间展开讲讲（挖坑警告）</p>
+<p>应用在移动安全领域，目标是给自己团队或者其他团队提效</p>
+<p>先说说 MCP，也就是模块化提示工程框架。在搭建过程中，我尝试将复杂任务拆解成一个个小模块，配合动态上下文管理，成功解决了传统提示工程在多轮对话中容易 “掉线” 的问题。这就好比把一道难题拆解成多个小问题，逐个击破，效率自然就上来了。​</p>
+<p>RAG 系统的落地同样有趣。它就像是大模型的 “私人图书馆管理员”，能从海量的移动安全知识库中精准检索信息，再结合大模型的生成能力，输出的内容既准确又高效。以前大模型回答问题时，有时会出现 “一本正经胡说八道” 的情况，有了 RAG，这个问题得到了极大改善。​</p>
+<p>ReAct Agent 的搭建则是一次大胆尝试。不同于传统智能体，它将推理和行动相结合，让智能体在面对移动安全漏洞检测、威胁情报分析等复杂任务时，能够自主规划解决方案。在测试阶段，它成功发现了几个我们人工疏忽的潜在漏洞，着实让人眼前一亮。​</p>
+<p>目前，这些技术成果已经应用到移动安全领域，目标很明确，就是帮助团队和同行提升工作效率。</p>
+<h2 id="角色转变"><a href="#角色转变" class="headerlink" title="角色转变"></a>角色转变</h2><p><img src="https://raw.githubusercontent.com/appl3s/img/master/change.png"></p>
+<p>作为一个码农，深知Never too old to learn</p>
+<p>在这种新的浪潮下我的个人角色也应该有所转变</p>
+<p>其实毕业这几年来，我的角色也一直在转变</p>
+<ul>
+<li><p>学生 → 白领</p>
+</li>
+<li><p>小白 → 专家？</p>
+</li>
+<li><p>单身狗 → 丈夫</p>
+</li>
+<li><p>租客 → 房奴</p>
+<p><em>未来可能还有</em>…</p>
+</li>
+<li><p>孩子 → 父亲</p>
+</li>
+<li><p><strong>Worker → Thinker!</strong></p>
+</li>
+</ul>
+<p><strong>角色转变不可怕，可怕的是在浪潮中被淘汰。</strong></p>
 
-(
-neg r 指令的结果是设置Carry Flag, 也就是借位的标志位. 因为neg r的操作语义是0 - r, 零减去任何非零的数,都会产生&quot;借位&quot;的. 当然这里r寄存器中的值也被改掉了,不过没关系, 反正它都要被稍后的指令再改掉的.
-sbb r, r 指令设置r为零或者-1. 因为语义为用一个值去减掉它自身, 结果当然是零啰. 但是,这样做会把carry flag一起给减掉的, 该指令的公式是
-r – r – CF –&gt;  r 
-
-为零(ZF=1) CMOVZ AX, BX
-CMOVZ r32, r/m32 CMOVZ EAX, EB
-)
-</code></pre>
-<hr>
-<h4 id="推广-题目来自-普普通通的逆向"><a href="#推广-题目来自-普普通通的逆向" class="headerlink" title="推广 题目来自:普普通通的逆向"></a>推广 题目来自:<a target="_blank" rel="noopener" href="http://219.219.60.244/challenges.php">普普通通的逆向</a></h4>
         </div>
 
         
@@ -369,7 +270,7 @@ CMOVZ r32, r/m32 CMOVZ EAX, EB
                 
                     <p class="copyright-item">
                         <span>Permalink:</span>
-                        <span><a href="https://appl3s.github.io/2016/07/12/re03/">https://appl3s.github.io/2016/07/12/re03/</a></span>
+                        <span><a href="https://appl3s.github.io/2025/04/19/thinking-about-llm/">https://appl3s.github.io/2025/04/19/thinking-about-llm/</a></span>
                     </p>
                 
                 
@@ -393,9 +294,7 @@ CMOVZ r32, r/m32 CMOVZ EAX, EB
                 <span class="tag">
                     
                     
-                        <a href="/tags/writeup/"># writeup</a>
-                    
-                        <a href="/tags/reverse/"># reverse</a>
+                        <a href="/tags/llm/"># llm</a>
                     
                         
                 </span>
@@ -408,10 +307,8 @@ CMOVZ r32, r/m32 CMOVZ EAX, EB
         </section>
         <section class="post-nav">
             
-                <a class="prev" rel="prev" href="/2016/12/05/taolu/">Android动态调试中的套路</a>
             
-            
-            <a class="next" rel="next" href="/2016/06/12/gootan2/">记“古檀杯”大学生网络安全技能大赛决赛(二)</a>
+            <a class="next" rel="next" href="/2025/04/14/golang-eino/">从0开始用ENIO开发Agent</a>
             
         </section>
 
